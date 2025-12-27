@@ -59,7 +59,7 @@ export default function WorkerAssignedJobs() {
                             <h3 className="text-xl font-semibold text-gray-800">{job.description}</h3>
                             <div className="flex flex-wrap gap-4 text-sm text-gray-600">
                                 <div className="flex items-center gap-1">
-                                    <FaMapMarkerAlt className="text-[#FA5804]" />
+                                    <FaMapMarkerAlt className="text-blue-600" />
                                     {job.location || "N/A"}
                                 </div>
                                 <div className="flex items-center gap-1">

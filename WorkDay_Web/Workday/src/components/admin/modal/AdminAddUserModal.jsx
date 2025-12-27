@@ -133,7 +133,7 @@ export default function AdminAddUserModal({ isOpen, onClose, onSubmit, professio
                             <button
                                 type="submit"
                                 disabled={isSubmitting}
-                                className="w-full bg-[#FA5804] text-white py-2 rounded hover:bg-orange-600"
+                                className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
                             >
                                 {isSubmitting ? 'Creating...' : 'Create User'}
                             </button>

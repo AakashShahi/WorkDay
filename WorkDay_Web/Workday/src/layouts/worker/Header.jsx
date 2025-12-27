@@ -63,7 +63,7 @@ export default function Header() {
             <header className="w-full bg-white shadow-sm flex items-center justify-between px-6 py-3 z-50 font-Inter">
                 {/* Logo */}
                 <div className="flex items-center gap-3">
-                    <img src={logo} alt="KaamMaa Logo" className="w-15 h-14 rounded-md object-contain" />
+                    <img src={logo} alt="Workday Logo" className="w-15 h-14 rounded-md object-contain" />
                 </div>
 
                 {/* Navigation */}
@@ -80,8 +80,8 @@ export default function Header() {
                             end={exact}
                             className={({ isActive }) =>
                                 `px-4 py-1.5 rounded-full transition font-semibold ${isActive
-                                    ? "text-white bg-gradient-to-r from-[#FA5804] to-[#f43f5e]"
-                                    : "text-gray-700 hover:text-[#FA5804]"
+                                    ? "text-white bg-blue-600"
+                                    : "text-gray-700 hover:text-blue-600"
                                 }`
                             }
                         >
@@ -96,7 +96,7 @@ export default function Header() {
                     <div className="relative" ref={notificationRef}>
                         <button
                             onClick={() => setShowNotificationDropdown(prev => !prev)}
-                            className="relative text-gray-600 hover:text-[#FA5804] transition focus:outline-none"
+                            className="relative text-gray-600 hover:text-blue-600 transition focus:outline-none"
                         >
                             <FaBell className="text-lg cursor-pointer" />
                             {notifications.length > 0 && (
@@ -112,7 +112,7 @@ export default function Header() {
                                         <p className="text-gray-500 text-sm">No new notifications</p>
                                     ) : (
                                         notifications.map((note) => (
-                                            <div key={note.id} className="bg-orange-50 border-l-4 border-orange-500 p-3 rounded-md mb-2 shadow-sm">
+                                            <div key={note.id} className="bg-blue-50 border-l-4 border-blue-500 p-3 rounded-md mb-2 shadow-sm">
                                                 <div className="flex justify-between items-start">
                                                     <div>
                                                         <p className="text-sm text-gray-700">{note.message}</p>
@@ -137,7 +137,7 @@ export default function Header() {
                     <div ref={profileRef}>
                         <div
                             onClick={() => setShowDropdown(prev => !prev)}
-                            className="flex items-center gap-3 cursor-pointer bg-orange-50 border border-orange-200 px-3 py-1 rounded-full hover:shadow transition"
+                            className="flex items-center gap-3 cursor-pointer bg-blue-50 border border-blue-200 px-3 py-1 rounded-full hover:shadow transition"
                         >
                             <div className="w-7 h-7 rounded-full bg-gray-200 shadow-inner flex items-center justify-center">
                                 <img

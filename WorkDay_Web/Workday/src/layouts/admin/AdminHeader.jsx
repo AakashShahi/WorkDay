@@ -71,7 +71,7 @@ export default function AdminHeader() {
                         {isVerificationLoading ? (
                             <p className="text-xs text-gray-400 animate-pulse">Loading...</p>
                         ) : (
-                            <p className="text-orange-500 font-extrabold text-xl">{pendingCount}</p>
+                            <p className="text-blue-600 font-extrabold text-xl">{pendingCount}</p>
                         )}
                     </div>
 
@@ -103,7 +103,7 @@ export default function AdminHeader() {
                     <div className="relative" ref={notificationRef}>
                         <button
                             onClick={() => setShowNotificationDropdown((prev) => !prev)}
-                            className="relative p-2 rounded-full text-gray-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
+                            className="relative p-2 rounded-full text-gray-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
                             aria-label="Notifications"
                             title="Notifications"
                         >
@@ -123,7 +123,7 @@ export default function AdminHeader() {
                                         <p className="text-gray-500 text-sm">No new notifications</p>
                                     ) : (
                                         notifications.map((note) => (
-                                            <div key={note.id} className="bg-orange-50 border-l-4 border-orange-500 p-3 rounded-md mb-2 shadow-sm">
+                                            <div key={note.id} className="bg-blue-50 border-l-4 border-blue-500 p-3 rounded-md mb-2 shadow-sm">
                                                 <div className="flex justify-between items-start">
                                                     <div>
                                                         <h3 className="font-semibold text-gray-800 text-sm">{note.title}</h3>
@@ -149,11 +149,11 @@ export default function AdminHeader() {
                     <div className="relative" ref={profileRef}>
                         <button
                             onClick={() => setShowProfileMenu((prev) => !prev)}
-                            className="flex items-center gap-3 rounded-full p-2 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
+                            className="flex items-center gap-3 rounded-full p-2 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
                             aria-label="User menu"
                             title="User menu"
                         >
-                            <div className="w-10 h-10 bg-gradient-to-tr from-[#FA5804] to-orange-400 shadow-md rounded-full flex items-center justify-center text-white font-bold select-none text-lg">
+                            <div className="w-10 h-10 bg-gradient-to-tr from-blue-600 to-blue-400 shadow-md rounded-full flex items-center justify-center text-white font-bold select-none text-lg">
                                 {user?.username?.slice(0, 2)?.toUpperCase() || "AD"}
                             </div>
                             <div className="hidden sm:flex flex-col text-left">
@@ -161,7 +161,7 @@ export default function AdminHeader() {
                                     {user?.name || "Admin User"}
                                 </span>
                                 <span className="text-xs text-gray-500 truncate max-w-[150px]">
-                                    {user?.email || "admin@kaammaa.com"}
+                                    {user?.email || "admin@workday.com"}
                                 </span>
                             </div>
                         </button>

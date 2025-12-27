@@ -33,7 +33,7 @@ export default function AdminReviewManagement() {
             <input
                 type="text"
                 placeholder="Search by comment or worker name..."
-                className="w-full max-w-sm px-4 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                className="w-full max-w-sm px-4 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 value={search}
                 onChange={(e) => {
                     setPage(1);
@@ -55,7 +55,7 @@ export default function AdminReviewManagement() {
                             <div className="flex justify-between items-start">
                                 <div>
                                     <p className="text-gray-800 font-medium text-sm">
-                                        <FaUser className="inline text-orange-500 mr-1" />
+                                        <FaUser className="inline text-blue-500 mr-1" />
                                         <span className="font-semibold">{review.customerId?.name}</span> reviewed{" "}
                                         <span className="text-gray-600">→</span>{" "}
                                         <span className="text-green-600 font-semibold">{review.workerId?.name}</span>
@@ -130,7 +130,7 @@ export default function AdminReviewManagement() {
                         <h2 className="text-lg font-semibold text-gray-800 mb-2">Confirm Deletion</h2>
                         <p className="text-sm text-gray-600 mb-4">
                             Are you sure you want to delete this review by{" "}
-                            <span className="font-semibold text-orange-600">{selectedReview.customerId?.name}</span>{" "}
+                            <span className="font-semibold text-blue-600">{selectedReview.customerId?.name}</span>{" "}
                             for <span className="font-semibold text-green-600">{selectedReview.workerId?.name}</span>?
                         </p>
                         <div className="flex justify-end gap-4">

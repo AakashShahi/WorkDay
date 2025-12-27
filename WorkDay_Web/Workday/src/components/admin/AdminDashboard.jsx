@@ -119,8 +119,8 @@ export default function AdminDashboard() {
         {
             label: "Total Professions",
             value: totalProfessions,
-            icon: <Briefcase className="text-orange-600" size={28} />,
-            color: "bg-orange-100",
+            icon: <Briefcase className="text-amber-500" size={28} />,
+            color: "bg-amber-100",
         },
         {
             label: "Total Jobs",
@@ -205,7 +205,7 @@ export default function AdminDashboard() {
                         <XAxis dataKey="month" />
                         <YAxis />
                         <Tooltip />
-                        <Bar dataKey="users" fill="#FA5804" radius={[6, 6, 0, 0]} />
+                        <Bar dataKey="users" fill="#2563EB" radius={[6, 6, 0, 0]} />
                     </BarChart>
                 </ResponsiveContainer>
             </motion.section>

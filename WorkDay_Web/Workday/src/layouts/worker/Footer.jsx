@@ -9,13 +9,13 @@ export default function Footer() {
         {/* Left Section - Logo and Info */}
         <div>
           <div className="flex items-center gap-2 mb-4">
-            <img src={logo} alt="KaamMaa Logo" className="w-8 h-5 rounded-full" />
+            <img src={logo} alt="Workday Logo" className="w-8 h-5 rounded-full" />
             <h1 className="text-xl font-bold">
-              <span className="text-white">Kaam</span><span className="text-[#FA5804]">Maa</span>
+              <span className="text-white">Work</span><span className="text-blue-600">day</span>
             </h1>
           </div>
           <p className="text-sm text-gray-300 leading-relaxed">
-            Connecting skilled workers with opportunities. Build your career, manage your work, and grow your professional network with KaamMaa.
+            Connecting skilled workers with opportunities. Build your career, manage your work, and grow your professional network with Workday.
           </p>
 
           <div className="flex gap-3 mt-4">
@@ -46,7 +46,7 @@ export default function Footer() {
         <div>
           <h3 className="text-white font-semibold mb-4">Contact</h3>
           <ul className="text-gray-300 text-sm space-y-2">
-            <li>support@kaammaa.com</li>
+            <li>support@workday.com</li>
             <li>+1 (555) 123-4567</li>
             <li>Available 24/7</li>
           </ul>
@@ -55,7 +55,7 @@ export default function Footer() {
 
       {/* Bottom Bar */}
       <div className="border-t border-gray-700 mt-10 pt-4 text-center text-sm text-gray-400">
-        © 2025 KaamMaa. All rights reserved. Built with <span className="text-red-500">❤️</span> for workers everywhere.
+        © 2025 Workday. All rights reserved. Built with <span className="text-red-500">❤️</span> for workers everywhere.
       </div>
     </footer>
   );

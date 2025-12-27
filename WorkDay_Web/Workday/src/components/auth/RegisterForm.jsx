@@ -87,7 +87,7 @@ export default function RegisterForm() {
         <div className="w-screen h-screen flex bg-white">
             {/* Left side */}
             <div className="w-full md:w-1/2 flex flex-col justify-center items-center relative px-6 py-10">
-                <img src={logo} alt="KaamMaa Logo" className="absolute top-6 left-6 h-10 md:h-12" />
+                <img src={logo} alt="Workday Logo" className="absolute top-6 left-6 h-10 md:h-12" />
                 <img src={workerImg} alt="Worker" className="w-3/4 max-h-[70vh] object-contain" />
                 <h1 className="text-black text-3xl md:text-4xl font-extrabold mt-4 tracking-wide text-center">
                     Join the Workforce
@@ -98,9 +98,9 @@ export default function RegisterForm() {
             <div className="w-full md:w-1/2 flex justify-center items-center px-6 py-10">
                 <div className="bg-white rounded-2xl shadow-2xl px-6 sm:px-8 py-8 w-full max-w-md">
                     <div className="text-center mb-8">
-                        <img src={logo} alt="KaamMaa Logo" className="h-10 mx-auto mb-2" />
+                        <img src={logo} alt="Workday Logo" className="h-10 mx-auto mb-2" />
                         <h2 className="text-xl md:text-2xl font-bold text-gray-800">Create your Worker Account</h2>
-                        <p className="text-sm text-gray-500">Start your journey with KaamMaa today!</p>
+                        <p className="text-sm text-gray-500">Start your journey with Workday today!</p>
                     </div>
 
                     <form onSubmit={formik.handleSubmit} className="space-y-5">
@@ -119,7 +119,7 @@ export default function RegisterForm() {
                                     onBlur={formik.handleBlur}
                                     value={formik.values.username}
                                     placeholder="e.g. bikash123"
-                                    className="w-full pl-10 pr-10 py-2 mt-1 border rounded-md focus:ring-2 focus:ring-[#FA5804] focus:outline-none"
+                                    className="w-full pl-10 pr-10 py-2 mt-1 border rounded-md focus:ring-2 focus:ring-blue-600 focus:outline-none"
                                 />
                                 {renderValidationIcon("username")}
                             </div>
@@ -143,7 +143,7 @@ export default function RegisterForm() {
                                     onBlur={formik.handleBlur}
                                     value={formik.values.email}
                                     placeholder="e.g. example@email.com"
-                                    className="w-full pl-10 pr-10 py-2 mt-1 border rounded-md focus:ring-2 focus:ring-[#FA5804] focus:outline-none"
+                                    className="w-full pl-10 pr-10 py-2 mt-1 border rounded-md focus:ring-2 focus:ring-blue-600 focus:outline-none"
                                 />
                                 {renderValidationIcon("email")}
                             </div>
@@ -167,7 +167,7 @@ export default function RegisterForm() {
                                     onBlur={formik.handleBlur}
                                     value={formik.values.phone}
                                     placeholder="98XXXXXXXX"
-                                    className="w-full pl-20 pr-10 py-2 mt-1 border rounded-md focus:ring-2 focus:ring-[#FA5804] focus:outline-none"
+                                    className="w-full pl-20 pr-10 py-2 mt-1 border rounded-md focus:ring-2 focus:ring-blue-600 focus:outline-none"
                                 />
                                 {renderValidationIcon("phone")}
                             </div>
@@ -198,7 +198,7 @@ export default function RegisterForm() {
                                     }}
                                     value={formik.values.password}
                                     placeholder="********"
-                                    className="w-full pl-10 pr-10 py-2 mt-1 border rounded-md focus:ring-2 focus:ring-[#FA5804] focus:outline-none"
+                                    className="w-full pl-10 pr-10 py-2 mt-1 border rounded-md focus:ring-2 focus:ring-blue-600 focus:outline-none"
                                 />
                                 <span
                                     className="absolute top-1/2 right-10 transform -translate-y-1/2 cursor-pointer text-gray-600"
@@ -257,7 +257,7 @@ export default function RegisterForm() {
                                     onBlur={formik.handleBlur}
                                     value={formik.values.confirmPassword}
                                     placeholder="Re-enter password"
-                                    className="w-full pl-10 pr-10 py-2 mt-1 border rounded-md focus:ring-2 focus:ring-[#FA5804] focus:outline-none"
+                                    className="w-full pl-10 pr-10 py-2 mt-1 border rounded-md focus:ring-2 focus:ring-blue-600 focus:outline-none"
                                 />
                                 {renderValidationIcon("confirmPassword")}
                             </div>
@@ -270,7 +270,7 @@ export default function RegisterForm() {
                         <button
                             type="submit"
                             disabled={isPending}
-                            className="w-full bg-[#FA5804] text-white font-bold py-2 rounded-md hover:bg-black transition-colors duration-300 disabled:opacity-60"
+                            className="w-full bg-blue-600 text-white font-bold py-2 rounded-md hover:bg-black transition-colors duration-300 disabled:opacity-60"
                         >
                             {isPending ? "Registering..." : "Register as Worker"}
                         </button>
@@ -278,8 +278,8 @@ export default function RegisterForm() {
 
                     {/* Login Link */}
                     <p className="mt-6 text-sm text-center text-gray-600">
-                        Already on <span className="font-bold italic">Kaam</span><span className="font-bold italic text-[#FA5804]">Maa</span>?{" "}
-                        <Link to="/" className="text-[#FA5804] font-semibold hover:underline">
+                        Already on <span className="font-bold italic">Work</span><span className="font-bold italic text-blue-600">Day</span>?{" "}
+                        <Link to="/" className="text-blue-600 font-semibold hover:underline">
                             Sign In
                         </Link>
                     </p>

@@ -30,12 +30,12 @@ export default function RequestResetPasswordPage() {
     });
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 to-white px-4">
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-white px-4">
             <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl p-8">
                 <div className="flex justify-center mb-6">
                     <img
                         src={logo}
-                        alt="Kaammaa Logo"
+                        alt="Workday Logo"
                         className="h-16"
                     />
                 </div>
@@ -61,7 +61,7 @@ export default function RequestResetPasswordPage() {
                                 type="email"
                                 name="email"
                                 id="email"
-                                className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg shadow-sm focus:ring-orange-500 focus:border-orange-500"
+                                className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500"
                                 onChange={formik.handleChange}
                                 onBlur={formik.handleBlur}
                                 value={formik.values.email}
@@ -73,7 +73,7 @@ export default function RequestResetPasswordPage() {
                     </div>
                     <button
                         type="submit"
-                        className="w-full bg-orange-500 hover:bg-orange-600 text-white font-medium py-2 rounded-lg transition duration-300"
+                        className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded-lg transition duration-300"
                     >
                         Request Password Reset
                     </button>
@@ -82,7 +82,7 @@ export default function RequestResetPasswordPage() {
                     <span>Remember your password?</span>{" "}
                     <a
                         href="/login"
-                        className="text-orange-500 hover:underline font-medium"
+                        className="text-blue-600 hover:underline font-medium"
                     >
                         Log In
                     </a>

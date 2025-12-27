@@ -70,17 +70,17 @@ export default function AdminVerificationsManagement() {
                                             <img
                                                 src={profilePic}
                                                 alt={`${worker.name} Profile`}
-                                                className="w-16 h-16 rounded-full object-cover border-2 border-orange-400"
+                                                className="w-16 h-16 rounded-full object-cover border-2 border-blue-400"
                                             />
                                         ) : (
-                                            <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center text-orange-500 text-3xl">
+                                            <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center text-blue-500 text-3xl">
                                                 <FaUser />
                                             </div>
                                         )}
                                     </div>
                                     <div className="space-y-1 text-sm text-gray-700">
                                         <p className="font-semibold flex items-center gap-2">
-                                            <FaUser className="text-orange-500" />
+                                            <FaUser className="text-blue-500" />
                                             {worker.name}
                                         </p>
                                         <p className="flex items-center gap-2">
@@ -180,10 +180,10 @@ export default function AdminVerificationsManagement() {
                                     <img
                                         src={getBackendImageUrl(selectedWorker.profilePic)}
                                         alt={`${selectedWorker.name} Profile`}
-                                        className="w-32 h-32 rounded-full object-cover border-4 border-orange-400"
+                                        className="w-32 h-32 rounded-full object-cover border-4 border-blue-400"
                                     />
                                 ) : (
-                                    <div className="w-32 h-32 rounded-full bg-gray-200 flex items-center justify-center text-orange-500 text-7xl">
+                                    <div className="w-32 h-32 rounded-full bg-gray-200 flex items-center justify-center text-blue-500 text-7xl">
                                         <FaUser />
                                     </div>
                                 )}

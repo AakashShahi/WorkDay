@@ -48,7 +48,7 @@ export default function AdminUserManagement() {
             case 'admin':
                 return 'bg-blue-100 text-blue-700';
             case 'worker':
-                return 'bg-orange-100 text-orange-700';
+                return 'bg-yellow-100 text-yellow-700';
             case 'customer':
                 return 'bg-purple-100 text-purple-700';
             default:
@@ -66,7 +66,7 @@ export default function AdminUserManagement() {
                 </div>
                 <button
                     onClick={() => setShowModal(true)}
-                    className="flex items-center gap-2 bg-[#FA5804] hover:bg-orange-600 text-white font-medium px-4 py-2 rounded-lg shadow transition"
+                    className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg shadow transition"
                 >
                     <HiOutlinePlus size={20} /> Add User
                 </button>
@@ -79,14 +79,14 @@ export default function AdminUserManagement() {
                         type="text"
                         placeholder="Search users..."
                         onChange={handleSearch}
-                        className="w-full border border-gray-300 rounded-md py-2 pl-10 pr-3 shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+                        className="w-full border border-gray-300 rounded-md py-2 pl-10 pr-3 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
                     />
                     <FaSearch className="absolute left-3 top-3 text-gray-400" />
                 </div>
                 <select
                     value={roleFilter}
                     onChange={(e) => setRoleFilter(e.target.value)}
-                    className="border border-gray-300 rounded-md px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+                    className="border border-gray-300 rounded-md px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
                 >
                     <option value="">All Roles</option>
                     <option value="admin">Admin</option>
@@ -136,7 +136,7 @@ export default function AdminUserManagement() {
                                 {/* Profession only if NOT admin or customer */}
                                 {user.role !== 'admin' && user.role !== 'customer' && (
                                     <p className="flex items-center gap-2">
-                                        <FaBriefcase className="text-orange-400" />
+                                        <FaBriefcase className="text-yellow-600" />
                                         <span><strong>Profession:</strong> {user.profession?.category || '—'}</span>
                                     </p>
                                 )}

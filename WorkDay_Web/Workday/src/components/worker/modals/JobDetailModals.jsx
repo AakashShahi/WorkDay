@@ -108,27 +108,27 @@ export default function JobDetailModal({ job, onClose }) { // Remove userId: pro
                     <FaTimes size={20} />
                 </button>
 
-                <h2 className="text-2xl font-semibold text-[#FA5804] mb-4">Job Details</h2>
+                <h2 className="text-2xl font-semibold text-blue-600 mb-4">Job Details</h2>
 
                 <div className="space-y-3 text-gray-800 text-sm">
                     <div className="flex items-center gap-2">
-                        <FaBriefcase className="text-[#FA5804]" />
+                        <FaBriefcase className="text-blue-600" />
                         <span><strong>Category:</strong> {job.category?.name || "N/A"}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                        <FaClock className="text-[#FA5804]" />
+                        <FaClock className="text-blue-600" />
                         <span><strong>Date:</strong> {job.date} {job.time}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                        <FaMapMarkerAlt className="text-[#FA5804]" />
+                        <FaMapMarkerAlt className="text-blue-600" />
                         <span><strong>Location:</strong> {job.location}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                        <FaUserTie className="text-[#FA5804]" />
+                        <FaUserTie className="text-blue-600" />
                         <span><strong>Customer:</strong> {customer.username}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                        <FaPhone className="text-[#FA5804]" />
+                        <FaPhone className="text-blue-600" />
                         <span><strong>Phone:</strong> {customer.phone}</span>
                     </div>
                     <div className="mt-1 text-gray-700"><strong>Description:</strong> {job.description}</div>
@@ -167,7 +167,7 @@ export default function JobDetailModal({ job, onClose }) { // Remove userId: pro
                                             className={`max-w-xs px-4 py-2 rounded-lg text-sm shadow
                                                 ${isWorkerMessage
                                                     ? "bg-white text-gray-800 border border-gray-300" // Worker's bubble (left)
-                                                    : "bg-[#FA5804] text-white" // Customer's bubble (right)
+                                                    : "bg-blue-600 text-white" // Customer's bubble (right)
                                                 }`}
                                         >
                                             {msg.content}
@@ -183,7 +183,7 @@ export default function JobDetailModal({ job, onClose }) { // Remove userId: pro
                     <div className="mt-3 flex items-center gap-2">
                         <input
                             type="text"
-                            className="flex-1 border rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#FA5804]"
+                            className="flex-1 border rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
                             placeholder="Type your message..."
                             value={newMessage}
                             onChange={(e) => setNewMessage(e.target.value)}
@@ -191,7 +191,7 @@ export default function JobDetailModal({ job, onClose }) { // Remove userId: pro
                         />
                         <button
                             onClick={handleSend}
-                            className="bg-[#FA5804] hover:bg-orange-600 text-white p-2 rounded-full transition"
+                            className="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-full transition"
                             aria-label="Send message"
                         >
                             <FaPaperPlane />

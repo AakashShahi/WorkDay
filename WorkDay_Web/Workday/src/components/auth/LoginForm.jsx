@@ -98,7 +98,7 @@ export default function LoginForm() {
                 <>
                     {/* Left side */}
                     <div className="w-full md:w-1/2 flex flex-col justify-center items-center relative px-6 py-10">
-                        <img src={logo} alt="KaamMaa Logo" className="absolute top-6 left-6 h-10 md:h-12" />
+                        <img src={logo} alt="Workday Logo" className="absolute top-6 left-6 h-10 md:h-12" />
                         <img src={workerImg} alt="Worker" className="w-3/4 max-h-[70vh] object-contain" />
                         <h1 className="text-black text-3xl md:text-4xl font-extrabold mt-4 tracking-wide text-center">
                             Connect with Opportunities
@@ -109,7 +109,7 @@ export default function LoginForm() {
                     <div className="w-full md:w-1/2 flex justify-center items-center px-6 py-10">
                         <div className="bg-white rounded-2xl shadow-2xl px-6 sm:px-8 py-8 w-full max-w-md">
                             <div className="text-center mb-8">
-                                <img src={logo} alt="KaamMaa Logo" className="h-10 mx-auto mb-2" />
+                                <img src={logo} alt="Workday Logo" className="h-10 mx-auto mb-2" />
                                 <h2 className="text-xl md:text-2xl font-bold text-gray-800">Sign in to your Account</h2>
                                 <p className="text-sm text-gray-500">Welcome back!</p>
                             </div>
@@ -129,7 +129,7 @@ export default function LoginForm() {
                                             name="identifier"
                                             type="text"
                                             placeholder="Enter your email or username"
-                                            className="w-full pl-10 pr-10 py-2 mt-1 border rounded-md focus:ring-2 focus:ring-[#FA5804] focus:outline-none"
+                                            className="w-full pl-10 pr-10 py-2 mt-1 border rounded-md focus:ring-2 focus:ring-blue-600 focus:outline-none"
                                             value={formik.values.identifier}
                                             onChange={formik.handleChange}
                                             onBlur={formik.handleBlur}
@@ -155,7 +155,7 @@ export default function LoginForm() {
                                             name="password"
                                             type={showPassword ? 'text' : 'password'}
                                             placeholder="********"
-                                            className="w-full pl-10 pr-10 py-2 mt-1 border rounded-md focus:ring-2 focus:ring-[#FA5804] focus:outline-none"
+                                            className="w-full pl-10 pr-10 py-2 mt-1 border rounded-md focus:ring-2 focus:ring-blue-600 focus:outline-none"
                                             value={formik.values.password}
                                             onChange={formik.handleChange}
                                             onBlur={formik.handleBlur}
@@ -205,7 +205,7 @@ export default function LoginForm() {
                                 </div>
 
                                 <div className="text-right">
-                                    <Link to="/request-reset-password" className="text-sm text-[#FA5804] hover:underline font-semibold">
+                                    <Link to="/request-reset-password" className="text-sm text-blue-600 hover:underline font-semibold">
                                         Forgot Password?
                                     </Link>
                                 </div>
@@ -213,7 +213,7 @@ export default function LoginForm() {
                                 <button
                                     type="submit"
                                     disabled={isPending}
-                                    className="w-full bg-[#FA5804] text-white font-bold py-2 rounded-md hover:bg-black transition-colors duration-300 disabled:opacity-60"
+                                    className="w-full bg-blue-600 text-white font-bold py-2 rounded-md hover:bg-black transition-colors duration-300 disabled:opacity-60"
                                 >
                                     {isPending ? "Logging in..." : "Login"}
                                 </button>
@@ -246,8 +246,8 @@ export default function LoginForm() {
                             </div>
 
                             <p className="mt-2 text-sm text-center text-gray-600">
-                                New to <span className="font-bold italic">Kaam</span><span className="font-bold italic text-[#FA5804]">Maa</span>?{" "}
-                                <Link to="/register" className="text-[#FA5804] font-semibold hover:underline">
+                                New to <span className="font-bold italic">Work</span><span className="font-bold italic text-blue-600">Day</span>?{" "}
+                                <Link to="/register" className="text-blue-600 font-semibold hover:underline">
                                     Register
                                 </Link>
                             </p>
@@ -255,7 +255,7 @@ export default function LoginForm() {
                     </div>
                 </>
             ) : (
-                <div className="w-full h-screen bg-gradient-to-r from-yellow-400 via-orange-400 to-red-400 flex flex-col items-center justify-center px-6 text-center">
+                <div className="w-full h-screen bg-gradient-to-r from-blue-400 via-blue-500 to-indigo-600 flex flex-col items-center justify-center px-6 text-center">
                     <motion.h1
                         initial={{ opacity: 0, y: -50, scale: 0.8 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -279,7 +279,7 @@ export default function LoginForm() {
                         whileHover={{ scale: 1.1, boxShadow: "0 0 20px rgba(255, 255, 255, 0.8)" }}
                         whileTap={{ scale: 0.95 }}
                         transition={{ type: "spring", stiffness: 300 }}
-                        className="mt-12 px-10 py-4 bg-white rounded-full text-orange-500 font-bold text-xl shadow-lg hover:bg-orange-50 focus:outline-none focus:ring-4 focus:ring-white/70"
+                        className="mt-12 px-10 py-4 bg-white rounded-full text-blue-600 font-bold text-xl shadow-lg hover:bg-blue-50 focus:outline-none focus:ring-4 focus:ring-white/70"
                     >
                         Logout
                     </motion.button>

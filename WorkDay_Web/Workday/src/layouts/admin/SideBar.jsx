@@ -16,10 +16,10 @@ export default function Sidebar() {
                 {/* Logo and Title */}
                 <div className="flex items-center gap-3 mb-10">
                     <div className="w-10 h-10 bg-white rounded-md flex items-center justify-center">
-                        <img src={logo} alt="KaamMaa Logo" className="w-10 h-8 object-contain" />
+                        <img src={logo} alt="Workday Logo" className="w-10 h-8 object-contain" />
                     </div>
                     <div>
-                        <h2 className="text-lg font-bold text-gray-900">KaamMaa</h2>
+                        <h2 className="text-lg font-bold text-gray-900">Workday</h2>
                         <p className="text-sm text-gray-500">Admin Portal</p>
                     </div>
                 </div>
@@ -50,7 +50,7 @@ function SidebarItem({ icon, label, to }) {
                 end
                 className={({ isActive }) =>
                     `flex items-center gap-3 px-3 py-2 rounded-md font-medium transition-all duration-200 ${isActive
-                        ? "bg-orange-50 text-[#FA5804] border-r-4 border-[#FA5804]"
+                        ? "bg-blue-50 text-blue-600 border-r-4 border-blue-600"
                         : "text-gray-700 hover:bg-gray-100"
                     }`
                 }

@@ -61,12 +61,12 @@ export default function WorkerCompletedJobs() {
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         placeholder="Search by description"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
                     />
                 </div>
                 <button
                     type="submit"
-                    className="bg-[#FA5804] text-white px-5 py-2 rounded-lg hover:bg-orange-600 transition duration-300 flex items-center gap-2"
+                    className="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition duration-300 flex items-center gap-2"
                 >
                     <FaSearch /> Search
                 </button>
@@ -111,7 +111,7 @@ export default function WorkerCompletedJobs() {
                             <h3 className="text-xl font-semibold text-gray-800">{job.description}</h3>
                             <div className="flex flex-wrap gap-4 text-sm text-gray-600">
                                 <div className="flex items-center gap-1">
-                                    <FaMapMarkerAlt className="text-[#FA5804]" />
+                                    <FaMapMarkerAlt className="text-blue-600" />
                                     {job.location || "N/A"}
                                 </div>
                                 <div className="flex items-center gap-1">
@@ -145,7 +145,7 @@ export default function WorkerCompletedJobs() {
                                     <span className="text-sm text-gray-600 ml-2">({review.rating || 0}/5)</span>
                                 </div>
                                 {review.comment && (
-                                    <p className="text-sm text-gray-700 mt-1 italic border-l-4 border-orange-400 pl-4">
+                                    <p className="text-sm text-gray-700 mt-1 italic border-l-4 border-blue-400 pl-4">
                                         "{review.comment}"
                                     </p>
                                 )}

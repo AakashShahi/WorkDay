@@ -43,7 +43,7 @@ export default function WorkerProfile() {
         const pdfWidth = pdf.internal.pageSize.getWidth();
         const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
         pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-        pdf.save("KaamMaa_Worker_CV.pdf");
+        pdf.save("Workday_Worker_CV.pdf");
     };
 
     useEffect(() => {
@@ -108,7 +108,7 @@ export default function WorkerProfile() {
                 <h1 className="text-3xl font-bold text-gray-800">Worker CV</h1>
                 <button
                     onClick={handleDownloadPDF}
-                    className="flex items-center gap-2 bg-[#FA5804] hover:bg-orange-600 text-white px-4 py-2 rounded-md shadow"
+                    className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md shadow"
                 >
                     <FaDownload /> Download CV
                 </button>
@@ -116,15 +116,15 @@ export default function WorkerProfile() {
 
             <div className="flex flex-col md:flex-row gap-10" ref={profileRef}>
                 {/* Left Profile Card */}
-                <div className="md:w-1/3 bg-white rounded-xl border border-orange-100 shadow p-6 space-y-4 text-center">
+                <div className="md:w-1/3 bg-white rounded-xl border border-blue-100 shadow p-6 space-y-4 text-center">
                     {profilePic ? (
                         <img
                             src={profilePic}
                             alt="Profile"
-                            className="w-32 h-32 mx-auto rounded-full object-cover border-4 border-[#FA5804]/30"
+                            className="w-32 h-32 mx-auto rounded-full object-cover border-4 border-blue-600/30"
                         />
                     ) : (
-                        <div className="w-32 h-32 mx-auto rounded-full flex items-center justify-center bg-orange-100 text-[#FA5804] text-4xl">
+                        <div className="w-32 h-32 mx-auto rounded-full flex items-center justify-center bg-blue-100 text-blue-600 text-4xl">
                             <FaUser />
                         </div>
                     )}
@@ -151,7 +151,7 @@ export default function WorkerProfile() {
                     <div className="flex flex-col gap-2">
                         <button
                             onClick={() => setShowUpdateProfile(true)}
-                            className="bg-[#FA5804] text-white rounded-md py-2 hover:bg-orange-600"
+                            className="bg-blue-600 text-white rounded-md py-2 hover:bg-blue-700"
                         >
                             <FaEdit className="inline mr-2" /> Update Profile
                         </button>
@@ -185,34 +185,34 @@ export default function WorkerProfile() {
                 {/* Right Profile Info */}
                 <div className="flex-1 space-y-8">
                     {/* Personal Info */}
-                    <div className="bg-white p-6 rounded-xl shadow border border-orange-100 space-y-4">
+                    <div className="bg-white p-6 rounded-xl shadow border border-blue-100 space-y-4">
                         <h3 className="text-lg font-semibold text-gray-800 mb-2">Personal Info</h3>
                         <div className="space-y-3 text-sm text-gray-700">
                             <p className="flex items-center gap-2">
-                                <FaEnvelope className="text-[#FA5804]" />
+                                <FaEnvelope className="text-blue-600" />
                                 <span><strong>Email:</strong> {profile.email}</span>
                             </p>
                             <p className="flex items-center gap-2">
-                                <FaPhoneAlt className="text-[#FA5804]" />
+                                <FaPhoneAlt className="text-blue-600" />
                                 <span><strong>Phone:</strong> {profile.phone}</span>
                             </p>
                             <p className="flex items-center gap-2">
-                                <FaMapMarkerAlt className="text-[#FA5804]" />
+                                <FaMapMarkerAlt className="text-blue-600" />
                                 <span><strong>Location:</strong> {profile.location}</span>
                             </p>
                             <p className="flex items-center gap-2">
-                                <FaUser className="text-[#FA5804]" />
+                                <FaUser className="text-blue-600" />
                                 <span><strong>Username:</strong> {profile.username}</span>
                             </p>
                             <p className="flex items-center gap-2">
-                                <FaHourglassHalf className="text-[#FA5804]" />
+                                <FaHourglassHalf className="text-blue-600" />
                                 <span><strong>Availability:</strong></span>
                                 <span className={`ml-2 px-2 py-0.5 rounded-full text-sm font-medium ${profile.availability ? "blink-green" : "blink-red"}`}>
                                     {profile.availability ? "Available" : "Not Available"}
                                 </span>
                             </p>
                             <p className="flex items-center gap-2">
-                                <FaCheckCircle className="text-[#FA5804]" />
+                                <FaCheckCircle className="text-blue-600" />
                                 <span><strong>Joined:</strong> {new Date(profile.createdAt).toLocaleDateString()}</span>
                             </p>
                         </div>
@@ -220,7 +220,7 @@ export default function WorkerProfile() {
 
                     {/* Profession and Certificate */}
                     <div className="grid md:grid-cols-2 gap-6">
-                        <div className="bg-white p-6 rounded-xl shadow border border-orange-100 space-y-2">
+                        <div className="bg-white p-6 rounded-xl shadow border border-blue-100 space-y-2">
                             <h3 className="text-lg font-semibold text-gray-800 mb-2">Profession</h3>
                             {profile.profession?.icon && (
                                 <img
@@ -230,16 +230,16 @@ export default function WorkerProfile() {
                                 />
                             )}
                             <p className="text-sm text-gray-700 flex items-center gap-2">
-                                <FaBriefcase className="text-[#FA5804]" />
+                                <FaBriefcase className="text-blue-600" />
                                 <span><strong>Profession:</strong> {profile.profession?.name || "Not specified"}</span>
                             </p>
                             <p className="text-sm text-gray-700 flex items-center gap-2">
-                                <FaUser className="text-[#FA5804]" />
+                                <FaUser className="text-blue-600" />
                                 <span><strong>Category:</strong> {profile.profession?.category || "Not specified"}</span>
                             </p>
                         </div>
 
-                        <div className="bg-white p-6 rounded-xl shadow border border-orange-100 space-y-4">
+                        <div className="bg-white p-6 rounded-xl shadow border border-blue-100 space-y-4">
                             <h3 className="text-lg font-semibold text-gray-800 mb-2">Certificate</h3>
                             {certificatePic ? (
                                 <img
@@ -249,21 +249,21 @@ export default function WorkerProfile() {
                                 />
                             ) : (
                                 <p className="text-gray-500 italic text-sm flex items-center gap-2">
-                                    <FaCertificate className="text-[#FA5804]" /> No certificate uploaded.
+                                    <FaCertificate className="text-blue-600" /> No certificate uploaded.
                                 </p>
                             )}
                         </div>
                     </div>
 
                     {/* Skills */}
-                    <div className="bg-white p-6 rounded-xl shadow border border-orange-100 space-y-4">
+                    <div className="bg-white p-6 rounded-xl shadow border border-blue-100 space-y-4">
                         <h3 className="text-lg font-semibold text-gray-800">Skills</h3>
                         <div className="flex flex-wrap gap-2">
                             {skillsArray.length > 0 ? (
                                 skillsArray.map((skill, i) => (
                                     <span
                                         key={i}
-                                        className="bg-orange-100 text-[#FA5804] text-sm px-3 py-1 rounded-full border border-orange-300"
+                                        className="bg-blue-100 text-blue-600 text-sm px-3 py-1 rounded-full border border-blue-300"
                                     >
                                         {skill}
                                     </span>

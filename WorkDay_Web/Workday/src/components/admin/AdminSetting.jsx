@@ -95,7 +95,7 @@ export default function AdminSetting() {
                         name="name"
                         onChange={profileFormik.handleChange}
                         value={profileFormik.values.name}
-                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500"
+                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
                         placeholder="Name"
                     />
                     {profileFormik.errors.name && (
@@ -117,7 +117,7 @@ export default function AdminSetting() {
 
                 <button
                     type="submit"
-                    className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-lg"
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg"
                 >
                     Update Profile
                 </button>
@@ -140,7 +140,7 @@ export default function AdminSetting() {
                                 name="currentPassword"
                                 value={passwordFormik.values.currentPassword}
                                 onChange={passwordFormik.handleChange}
-                                className="flex-grow px-4 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500"
+                                className="flex-grow px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
                                 placeholder="Current Password"
                             />
                             <button
@@ -168,7 +168,7 @@ export default function AdminSetting() {
                             name="newPassword"
                             value={passwordFormik.values.newPassword}
                             onChange={passwordFormik.handleChange}
-                            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500"
+                            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
                             placeholder="New Password"
                         />
                         {passwordFormik.errors.newPassword && (

@@ -58,8 +58,8 @@ export default function WorkerMyJobs() {
                                     className={classNames(
                                         "relative w-full py-4 px-3 text-center whitespace-nowrap font-semibold text-gray-600 transition-transform duration-300 ease-in-out focus:outline-none",
                                         isActive
-                                            ? "text-[#FA5804] scale-110"
-                                            : "hover:text-[#FA5804] focus-visible:text-[#FA5804] scale-100"
+                                            ? "text-blue-600 scale-110"
+                                            : "hover:text-blue-600 focus-visible:text-blue-600 scale-100"
                                     )}
                                     style={{
                                         // Smooth scaling animation handled by transition-transform
@@ -72,7 +72,7 @@ export default function WorkerMyJobs() {
                                         aria-hidden="true"
                                         className={classNames(
                                             "absolute bottom-0 left-1/2 transform -translate-x-1/2 h-1 w-14 rounded-t-full transition-all duration-300",
-                                            isActive ? "bg-[#FA5804]" : "bg-transparent"
+                                            isActive ? "bg-blue-600" : "bg-transparent"
                                         )}
                                     />
                                 </button>

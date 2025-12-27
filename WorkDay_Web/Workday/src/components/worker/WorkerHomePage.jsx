@@ -132,7 +132,7 @@ export default function WorkerHomePage() {
         value,
     }));
 
-    const COLORS = ["#FA5804", "#FFBB28", "#00C49F", "#0088FE", "#FF8042", "#A28FFF"];
+    const COLORS = ["#2563EB", "#FFBB28", "#00C49F", "#0088FE", "#FF8042", "#A28FFF"];
 
     // --------------------------------------
 
@@ -161,7 +161,7 @@ export default function WorkerHomePage() {
                     className="flex flex-col items-center md:items-start md:flex-1"
                 >
                     <h1 className="text-5xl font-extrabold tracking-tight leading-tight">
-                        Work <span className="text-[#FA5804]">Your Way</span>
+                        Work <span className="text-blue-600">Your Way</span>
                     </h1>
                     <p className="mt-4 max-w-xl text-lg text-gray-600">
                         Discover local job opportunities, manage your work schedule, and
@@ -169,7 +169,7 @@ export default function WorkerHomePage() {
                     </p>
                     <button
                         onClick={() => navigate("/worker/dashboard/myjobs")}
-                        className="mt-8 inline-flex items-center gap-3 rounded-full bg-[#FA5804] px-8 py-3 font-semibold text-white shadow-lg hover:bg-orange-600 focus:outline-none focus:ring-4 focus:ring-orange-300 transition"
+                        className="mt-8 inline-flex items-center gap-3 rounded-full bg-blue-600 px-8 py-3 font-semibold text-white shadow-lg hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 transition"
                         aria-label="Navigate to My Jobs Dashboard"
                     >
                         Go to Jobs <FaArrowRight />
@@ -253,7 +253,7 @@ export default function WorkerHomePage() {
                     ) : (
                         <ResponsiveContainer width="100%" height={250}>
                             <LineChart data={completionTrendData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
-                                <Line type="monotone" dataKey="count" stroke="#FA5804" strokeWidth={3} />
+                                <Line type="monotone" dataKey="count" stroke="#2563EB" strokeWidth={3} />
                                 <CartesianGrid stroke="#eee" strokeDasharray="5 5" />
                                 <XAxis dataKey="month" />
                                 <YAxis allowDecimals={false} />
@@ -287,7 +287,7 @@ export default function WorkerHomePage() {
                                 }
                                 margin={{ top: 5, right: 20, bottom: 5, left: 0 }}
                             >
-                                <Line type="monotone" dataKey="count" stroke="#FA5804" strokeWidth={3} />
+                                <Line type="monotone" dataKey="count" stroke="#2563EB" strokeWidth={3} />
                                 <CartesianGrid stroke="#eee" strokeDasharray="5 5" />
                                 <XAxis dataKey="date" />
                                 <YAxis allowDecimals={false} />
@@ -314,7 +314,7 @@ export default function WorkerHomePage() {
                     aria-label="Calendar with job highlights"
                 >
                     <h2 className="text-2xl font-semibold mb-4 text-gray-800 flex items-center gap-3">
-                        <MdCalendarToday className="text-[#FA5804] text-3xl" />
+                        <MdCalendarToday className="text-blue-600 text-3xl" />
                         Work Calendar
                     </h2>
 
@@ -344,7 +344,7 @@ export default function WorkerHomePage() {
                     aria-label={`Jobs scheduled on ${selectedDate.toDateString()}`}
                 >
                     <h2 className="text-2xl font-semibold mb-6 text-gray-800 flex items-center gap-3">
-                        <FaClipboardList className="text-[#FA5804] text-3xl" />
+                        <FaClipboardList className="text-blue-600 text-3xl" />
                         Jobs on {selectedDate.toDateString()}
                     </h2>
 
@@ -363,8 +363,8 @@ export default function WorkerHomePage() {
                         {filteredJobs.map((job) => (
                             <motion.article
                                 key={job._id}
-                                whileHover={{ scale: 1.03, boxShadow: "0 8px 24px rgba(250, 88, 4, 0.2)" }}
-                                className="group cursor-pointer rounded-xl border border-gray-200 p-5 hover:border-[#FA5804] transition-shadow bg-gradient-to-tr from-white to-[#fff9f3]"
+                                whileHover={{ scale: 1.03, boxShadow: "0 8px 24px rgba(37, 99, 235, 0.2)" }}
+                                className="group cursor-pointer rounded-xl border border-gray-200 p-5 hover:border-blue-600 transition-shadow bg-gradient-to-tr from-white to-[#f0f8ff]"
                                 onClick={() => navigate("/worker/dashboard/myjobs")}
                                 aria-label={`View details of job: ${job.description}`}
                             >
@@ -373,35 +373,35 @@ export default function WorkerHomePage() {
                                         <img
                                             src={getBackendImageUrl(job.icon)}
                                             alt={`${job.category?.name} icon`}
-                                            className="w-16 h-16 rounded-lg border border-[#FA5804]"
+                                            className="w-16 h-16 rounded-lg border border-blue-600"
                                         />
                                     ) : (
-                                        <div className="w-16 h-16 flex items-center justify-center bg-[#FA5804] rounded-lg text-white text-2xl font-bold">
+                                        <div className="w-16 h-16 flex items-center justify-center bg-blue-600 rounded-lg text-white text-2xl font-bold">
                                             {job.category?.name?.charAt(0) || "J"}
                                         </div>
                                     )}
 
                                     <div className="flex flex-col">
-                                        <h3 className="text-xl font-bold text-[#FA5804]">{job.category?.name || "No Category"}</h3>
+                                        <h3 className="text-xl font-bold text-blue-600">{job.category?.name || "No Category"}</h3>
                                         <p className="text-gray-600">{job.description}</p>
                                     </div>
                                 </header>
 
                                 <ul className="grid grid-cols-2 gap-4 text-sm text-gray-700">
                                     <li className="flex items-center gap-2">
-                                        <FaMapMarkerAlt className="text-[#FA5804]" />
+                                        <FaMapMarkerAlt className="text-blue-600" />
                                         <span>{job.location || "No Location"}</span>
                                     </li>
                                     <li className="flex items-center gap-2">
-                                        <FaClock className="text-[#FA5804]" />
+                                        <FaClock className="text-blue-600" />
                                         <span>{job.time || "No Time"}</span>
                                     </li>
                                     <li className="flex items-center gap-2">
-                                        <FaUserTie className="text-[#FA5804]" />
+                                        <FaUserTie className="text-blue-600" />
                                         <span>{job.postedBy?.name || "Unknown Customer"}</span>
                                     </li>
                                     <li className="flex items-center gap-2">
-                                        <FaPhoneAlt className="text-[#FA5804]" />
+                                        <FaPhoneAlt className="text-blue-600" />
                                         <span>{job.postedBy?.phone || "No Contact"}</span>
                                     </li>
                                 </ul>

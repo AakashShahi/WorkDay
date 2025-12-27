@@ -22,9 +22,9 @@ export default function WorkerInProgressJob() {
             {inProgressJobs.map((job) => (
                 <motion.div
                     key={job._id}
-                    whileHover={{ scale: 1.02, boxShadow: "0 8px 24px rgba(250, 88, 4, 0.2)" }}
+                    whileHover={{ scale: 1.02, boxShadow: "0 8px 24px rgba(37, 99, 235, 0.2)" }}
                     transition={{ duration: 0.2 }}
-                    className="cursor-pointer rounded-xl border border-gray-200 p-5 hover:border-[#FA5804] transition-shadow bg-gradient-to-tr from-white to-[#fff9f3]"
+                    className="cursor-pointer rounded-xl border border-gray-200 p-5 hover:border-blue-600 transition-shadow bg-gradient-to-tr from-white to-[#f0f8ff]"
                     onClick={() => setSelectedJob(job)}
                 >
                     <header className="flex items-center gap-5 mb-3">
@@ -32,34 +32,34 @@ export default function WorkerInProgressJob() {
                             <img
                                 src={getBackendImageUrl(job.category.icon)}
                                 alt={`${job.category?.category} icon`}
-                                className="w-16 h-16 rounded-lg border border-[#FA5804]"
+                                className="w-16 h-16 rounded-lg border border-blue-600"
                             />
                         ) : (
-                            <div className="w-16 h-16 flex items-center justify-center bg-[#FA5804] rounded-lg text-white text-2xl font-bold">
+                            <div className="w-16 h-16 flex items-center justify-center bg-blue-600 rounded-lg text-white text-2xl font-bold">
                                 {job.category?.name?.charAt(0) || "J"}
                             </div>
                         )}
                         <div className="flex flex-col">
-                            <h3 className="text-xl font-bold text-[#FA5804]">{job.category?.name || "No Category"}</h3>
+                            <h3 className="text-xl font-bold text-blue-600">{job.category?.name || "No Category"}</h3>
                             <p className="text-gray-600">{job.description}</p>
                         </div>
                     </header>
 
                     <ul className="grid grid-cols-2 gap-4 text-sm text-gray-700">
                         <li className="flex items-center gap-2">
-                            <FaMapMarkerAlt className="text-[#FA5804]" />
+                            <FaMapMarkerAlt className="text-blue-600" />
                             <span>{job.location || "No Location"}</span>
                         </li>
                         <li className="flex items-center gap-2">
-                            <FaClock className="text-[#FA5804]" />
+                            <FaClock className="text-blue-600" />
                             <span>{job.date} {job.time}</span>
                         </li>
                         <li className="flex items-center gap-2">
-                            <FaUserTie className="text-[#FA5804]" />
+                            <FaUserTie className="text-blue-600" />
                             <span>{job.postedBy?.name || "Unknown"}</span>
                         </li>
                         <li className="flex items-center gap-2">
-                            <FaPhone className="text-[#FA5804]" />
+                            <FaPhone className="text-blue-600" />
                             <span>{job.postedBy?.phone || "N/A"}</span>
                         </li>
                     </ul>

@@ -82,7 +82,7 @@ export default function WorkerJobList() {
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
                                 placeholder="Search by description..."
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FA5804]"
+                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
                             />
                         </div>
 
@@ -99,7 +99,7 @@ export default function WorkerJobList() {
                                 value={location}
                                 onChange={(e) => setLocation(e.target.value)}
                                 placeholder="e.g. Nayapati"
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FA5804]"
+                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
                             />
                         </div>
 
@@ -114,7 +114,7 @@ export default function WorkerJobList() {
                                 id="category"
                                 value={category}
                                 onChange={(e) => setCategory(e.target.value)}
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FA5804]"
+                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
                             >
                                 <option value="">All Categories</option>
                                 {isLoadingProfessions ? (
@@ -133,7 +133,7 @@ export default function WorkerJobList() {
 
                         <button
                             type="submit"
-                            className="w-full flex justify-center items-center gap-2 bg-[#FA5804] hover:bg-orange-600 text-white font-semibold px-5 py-3 rounded-lg transition duration-300 focus:outline-none focus:ring-4 focus:ring-orange-300"
+                            className="w-full flex justify-center items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 py-3 rounded-lg transition duration-300 focus:outline-none focus:ring-4 focus:ring-blue-300"
                         >
                             <FaSearch size={18} />
                             Search
@@ -184,7 +184,7 @@ export default function WorkerJobList() {
                                         </h3>
                                         <div className="flex flex-wrap gap-5 text-gray-600 text-sm">
                                             <div className="flex items-center gap-2">
-                                                <FaMapMarkerAlt className="text-[#FA5804]" />
+                                                <FaMapMarkerAlt className="text-blue-600" />
                                                 <span>{job.location || "N/A"}</span>
                                             </div>
                                             <div className="flex items-center gap-2">
@@ -221,7 +221,7 @@ export default function WorkerJobList() {
                                         <button
                                             onClick={() => setSelectedJob(job)}
                                             disabled={isRequesting}
-                                            className="px-6 py-3 bg-[#FA5804] text-white font-semibold rounded-lg hover:bg-orange-600 transition duration-300 disabled:opacity-50"
+                                            className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition duration-300 disabled:opacity-50"
                                             aria-label={`Request job: ${job.description}`}
                                         >
                                             {isRequesting && selectedJob?._id === job._id
@@ -318,7 +318,7 @@ export default function WorkerJobList() {
                         {/* Job Details Grid */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-gray-700 text-lg">
                             <div className="flex items-center gap-3">
-                                <FaBriefcase className="text-[#FA5804] text-2xl flex-shrink-0" />
+                                <FaBriefcase className="text-blue-600 text-2xl flex-shrink-0" />
                                 <div>
                                     <dt className="font-semibold">Category</dt>
                                     <dd>{selectedJob.category?.category || "N/A"}</dd>
@@ -326,7 +326,7 @@ export default function WorkerJobList() {
                             </div>
 
                             <div className="flex items-center gap-3">
-                                <FaMapMarkerAlt className="text-[#FA5804] text-2xl flex-shrink-0" />
+                                <FaMapMarkerAlt className="text-blue-600 text-2xl flex-shrink-0" />
                                 <div>
                                     <dt className="font-semibold">Location</dt>
                                     <dd>{selectedJob.location || "N/A"}</dd>
@@ -334,7 +334,7 @@ export default function WorkerJobList() {
                             </div>
 
                             <div className="flex items-center gap-3">
-                                <FaClock className="text-[#FA5804] text-2xl flex-shrink-0" />
+                                <FaClock className="text-blue-600 text-2xl flex-shrink-0" />
                                 <div>
                                     <dt className="font-semibold">Date & Time</dt>
                                     <dd>
@@ -348,7 +348,7 @@ export default function WorkerJobList() {
                             </div>
 
                             <div className="flex items-center gap-3">
-                                <FaPerson className="text-[#FA5804] text-2xl flex-shrink-0" />
+                                <FaPerson className="text-blue-600 text-2xl flex-shrink-0" />
                                 <div>
                                     <dt className="font-semibold">Customer</dt>
                                     <dd>{selectedJob.postedBy?.name || "Unknown"}</dd>
@@ -356,7 +356,7 @@ export default function WorkerJobList() {
                             </div>
 
                             <div className="flex items-center gap-3 col-span-full">
-                                <FaPhone className="text-[#FA5804] text-2xl flex-shrink-0" />
+                                <FaPhone className="text-blue-600 text-2xl flex-shrink-0" />
                                 <div>
                                     <dt className="font-semibold">Contact</dt>
                                     <dd>{selectedJob.postedBy?.phone || "N/A"}</dd>
@@ -386,7 +386,7 @@ export default function WorkerJobList() {
                             <button
                                 onClick={confirmRequest}
                                 disabled={isRequesting}
-                                className="px-8 py-3 bg-[#FA5804] text-white rounded-lg font-semibold hover:bg-orange-600 transition disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-orange-400"
+                                className="px-8 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-400"
                             >
                                 {isRequesting ? "Requesting..." : "Request Job"}
                             </button>

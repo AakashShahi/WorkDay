@@ -32,7 +32,7 @@ export default function AdminProfessionManagement() {
                 <h1 className="text-2xl font-bold text-gray-800">Profession Management</h1>
                 <button
                     onClick={() => setShowCreate(true)}
-                    className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded hover:bg-orange-600"
+                    className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded hover:bg-blue-600"
                 >
                     <Plus size={18} />
                     Add Profession

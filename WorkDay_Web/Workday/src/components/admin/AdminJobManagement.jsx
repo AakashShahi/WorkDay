@@ -29,8 +29,8 @@ const statusColors = {
         card: "bg-yellow-50",
     },
     "in-progress": {
-        badge: "bg-orange-100 text-orange-700 border-orange-300",
-        card: "bg-orange-50",
+        badge: "bg-blue-100 text-blue-700 border-blue-300",
+        card: "bg-blue-50",
     },
     done: {
         badge: "bg-gray-100 text-gray-700 border-gray-300",
@@ -148,7 +148,7 @@ export default function AdminJobManagement() {
                                     </div>
                                     <div className="flex flex-wrap gap-5 text-gray-600 text-sm">
                                         <div className="flex items-center gap-2">
-                                            <FaMapMarkerAlt className="text-[#FA5804]" />
+                                            <FaMapMarkerAlt className="text-blue-600" />
                                             <span>{job.location || "N/A"}</span>
                                         </div>
                                         <div className="flex items-center gap-2">

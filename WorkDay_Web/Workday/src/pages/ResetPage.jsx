@@ -40,12 +40,12 @@ export default function ResetPasswordPage() {
     });
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-tr from-orange-100 to-white px-4">
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-tr from-blue-100 to-white px-4">
             <div className="bg-white shadow-2xl rounded-2xl w-full max-w-md p-8">
                 <div className="flex justify-center mb-6">
-                    <img src={logo} alt="Kaammaa Logo" className="h-12 w-auto" />
+                    <img src={logo} alt="Workday Logo" className="h-12 w-auto" />
                 </div>
-                <h2 className="text-2xl font-bold text-center text-orange-600 mb-4">
+                <h2 className="text-2xl font-bold text-center text-blue-600 mb-4">
                     Reset Your Password
                 </h2>
                 <p className="text-center text-gray-500 mb-6">
@@ -55,7 +55,7 @@ export default function ResetPasswordPage() {
                     {/* New Password */}
                     <div className="relative">
                         <label className="block text-sm text-gray-600 mb-1">New Password</label>
-                        <div className="flex items-center border rounded-lg px-3 py-2 shadow-sm focus-within:ring-2 focus-within:ring-orange-400">
+                        <div className="flex items-center border rounded-lg px-3 py-2 shadow-sm focus-within:ring-2 focus-within:ring-blue-400">
                             <FiLock className="text-gray-400 mr-2" />
                             <input
                                 type={showPassword ? "text" : "password"}
@@ -83,7 +83,7 @@ export default function ResetPasswordPage() {
                     {/* Confirm Password */}
                     <div className="relative">
                         <label className="block text-sm text-gray-600 mb-1">Confirm Password</label>
-                        <div className="flex items-center border rounded-lg px-3 py-2 shadow-sm focus-within:ring-2 focus-within:ring-orange-400">
+                        <div className="flex items-center border rounded-lg px-3 py-2 shadow-sm focus-within:ring-2 focus-within:ring-blue-400">
                             <FiCheck className="text-gray-400 mr-2" />
                             <input
                                 type={showConfirmPassword ? "text" : "password"}
@@ -111,7 +111,7 @@ export default function ResetPasswordPage() {
                     {/* Submit */}
                     <button
                         type="submit"
-                        className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2 rounded-lg transition-all duration-200"
+                        className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-lg transition-all duration-200"
                         disabled={resetPassword.isLoading}
                     >
                         {resetPassword.isLoading ? "Resetting..." : "Reset Password"}
