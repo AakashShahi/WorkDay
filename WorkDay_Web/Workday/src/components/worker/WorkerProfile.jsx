@@ -18,10 +18,12 @@ import {
     FaHourglassHalf,
     FaCertificate,
     FaBriefcase,
+    FaShieldAlt,
 } from "react-icons/fa";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import WorkerProfileModals from "./modals/WorkerProfileModals";
+import TwoFactorSetup from "../auth/TwoFactorSetup";
 
 export default function WorkerProfile() {
     const { data, isLoading } = useGetWorkerProfile();
@@ -272,6 +274,19 @@ export default function WorkerProfile() {
                                 <span className="text-gray-500 text-sm italic">No skills listed.</span>
                             )}
                         </div>
+                    </div>
+
+                    {/* 2FA Setup Section */}
+                    <div className="bg-white p-6 rounded-xl shadow border border-blue-100 space-y-4">
+                        <div className="flex items-center gap-2 mb-2">
+                            <FaShieldAlt className="text-blue-600 text-xl" />
+                            <h3 className="text-lg font-semibold text-gray-800">Security & 2FA</h3>
+                        </div>
+                        <p className="text-sm text-gray-600">
+                            Enhance your account security by enabling Two-Factor Authentication.
+                            When enabled, you'll be asked for a code from your authenticator app during login.
+                        </p>
+                        <TwoFactorSetup />
                     </div>
                 </div>
             </div>

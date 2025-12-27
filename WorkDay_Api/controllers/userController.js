@@ -2,10 +2,32 @@ const User = require("../models/User")
 const bcrypt = require("bcrypt")
 const jwt = require("jsonwebtoken")
 const nodemailer = require("nodemailer")
+const speakeasy = require("speakeasy")
+const qrcode = require("qrcode")
+const axios = require("axios")
 
 //Registration COntroller
 exports.regiterUser = async (req, res) => {
-    const { username, email, name, password, role, profession, skills, location, availability, certificateUrl, isVerified, phone } = req.body
+    console.log("Register Body:", req.body);
+    const { username, email, name, password, role, profession, skills, location, availability, certificateUrl, isVerified, phone, captchaToken } = req.body
+
+    // 1. Verify Captcha
+    if (!captchaToken) {
+        console.log("Captcha token missing in registration");
+        return res.status(400).json({ success: false, message: "Captcha token is missing" });
+    }
+
+    try {
+        const googleVerifyUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${process.env.RECAPTCHA_SECRET_KEY}&response=${captchaToken}`;
+        const response = await axios.post(googleVerifyUrl);
+        if (!response.data.success) {
+            console.log("Captcha verification failed in registration:", response.data);
+            return res.status(400).json({ success: false, message: "Captcha verification failed" });
+        }
+    } catch (error) {
+        console.error("Captcha Error in registration:", error);
+        return res.status(500).json({ success: false, message: "Captcha verification server error" });
+    }
 
     try {
         const existingUser = await User.findOne(
@@ -15,6 +37,7 @@ exports.regiterUser = async (req, res) => {
         )
 
         if (existingUser) {
+            console.log("User already exists:", username, email);
             return res.status(400).json(
                 {
                     "success": false, "message": "Email or username already in use"
@@ -45,13 +68,14 @@ exports.regiterUser = async (req, res) => {
         )
 
         await newUser.save()
+        console.log("User registered successfully:", username);
 
         return res.status(200).json(
             { "success": true, "message": `${role} registered` }
         )
 
     } catch (error) {
-        console.log(error);
+        console.log("Registration Error:", error);
         return res.status(500).json(
             { "success": false, "message": "Server Error" }
         )
@@ -61,8 +85,29 @@ exports.regiterUser = async (req, res) => {
 
 // Login COntroller
 exports.loginUser = async (req, res) => {
-    const { email, password, username } = req.body
+    console.log("Login Body:", req.body);
+    const { email, password, username, captchaToken } = req.body
+
+    // 1. Verify Captcha
+    if (!captchaToken) {
+        console.log("Captcha token missing in login");
+        return res.status(400).json({ success: false, message: "Captcha token is missing" });
+    }
+
+    try {
+        const googleVerifyUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${process.env.RECAPTCHA_SECRET_KEY}&response=${captchaToken}`;
+        const response = await axios.post(googleVerifyUrl);
+        if (!response.data.success) {
+            console.log("Captcha verification failed in login:", response.data);
+            return res.status(400).json({ success: false, message: "Captcha verification failed" });
+        }
+    } catch (error) {
+        console.error("Captcha Error in login:", error);
+        return res.status(500).json({ success: false, message: "Captcha verification server error" });
+    }
+
     if (!password || (!email && !username)) {
+        console.log("Missing fields in login:", { email, username, hasPassword: !!password });
         return res.status(400).json(
             {
                 "success": false,
@@ -78,19 +123,34 @@ exports.loginUser = async (req, res) => {
         )
 
         if (!getUser) {
+            console.log("User not found:", email || username);
             return res.status(400).json(
                 { "success": false, "message": "User not found" }
             )
-
-
         }
 
         const passwordCheck = await bcrypt.compare(password, getUser.password)
         if (!passwordCheck) {
+            console.log("Invalid password for user:", getUser.username);
             return res.status(400).json(
                 { "success": false, "message": "Invalid Credentials" }
             )
+        }
 
+        // 2. Check 2FA
+        if (getUser.isTwoFactorEnabled) {
+            console.log("2FA required for user:", getUser.username);
+            const tempToken = jwt.sign(
+                { id: getUser._id, role: '2fa_pending' },
+                process.env.SECRET,
+                { expiresIn: "5m" }
+            );
+            return res.status(200).json({
+                success: true,
+                require2FA: true,
+                message: "2FA Verification Required",
+                tempToken: tempToken
+            });
         }
 
         const payload = {
@@ -98,10 +158,11 @@ exports.loginUser = async (req, res) => {
             "email": getUser.email,
             "username": getUser.username,
             "name": getUser.name,
-
+            "role": getUser.role
         }
 
         const token = jwt.sign(payload, process.env.SECRET, { expiresIn: "7d" })
+        console.log("Login successful for user:", getUser.username);
         return res.status(200).json(
             {
                 "success": true,
@@ -112,6 +173,7 @@ exports.loginUser = async (req, res) => {
         )
 
     } catch (error) {
+        console.log("Login Execution Error:", error);
         return res.status(500).json(
             { "success": false, "message": "Server error" }
         )
@@ -180,5 +242,98 @@ exports.resetPassword = async (req, res) => {
         return res.status(500).json(
             { "success": false, "message": "Server error/Token invalid" }
         )
+    }
+}
+
+// 2FA Setup
+exports.setup2FA = async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id || req.user._id);
+        if (!user) return res.status(404).json({ success: false, message: "User not found" });
+
+        const secret = speakeasy.generateSecret({ name: `WorkDay (${user.username})` });
+        user.twoFactorSecret = secret.base32;
+        await user.save();
+
+        qrcode.toDataURL(secret.otpauth_url, (err, data_url) => {
+            if (err) return res.status(500).json({ success: false, message: "Error generating QR Code" });
+            res.json({
+                success: true,
+                message: "Scan this QR code",
+                secret: secret.base32,
+                qrCode: data_url
+            });
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ success: false, message: "Server Error" });
+    }
+}
+
+// Verify 2FA Setup
+exports.verify2FASetup = async (req, res) => {
+    const { token } = req.body;
+    try {
+        const user = await User.findById(req.user.id || req.user._id);
+        if (!user) return res.status(404).json({ success: false, message: "User not found" });
+
+        const verified = speakeasy.totp.verify({
+            secret: user.twoFactorSecret,
+            encoding: 'base32',
+            token: token
+        });
+
+        if (verified) {
+            user.isTwoFactorEnabled = true;
+            await user.save();
+            return res.status(200).json({ success: true, message: "2FA Enabled Successfully" });
+        } else {
+            return res.status(400).json({ success: false, message: "Invalid OTP" });
+        }
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ success: false, message: "Server Error" });
+    }
+}
+
+// Verify 2FA Login
+exports.verify2FALogin = async (req, res) => {
+    const { otp, tempToken } = req.body;
+    if (!otp || !tempToken) return res.status(400).json({ success: false, message: "Missing fields" });
+
+    try {
+        const decoded = jwt.verify(tempToken, process.env.SECRET);
+        if (decoded.role !== '2fa_pending') return res.status(401).json({ success: false, message: "Invalid Token" });
+
+        const user = await User.findById(decoded.id);
+        if (!user) return res.status(404).json({ success: false, message: "User not found" });
+
+        const verified = speakeasy.totp.verify({
+            secret: user.twoFactorSecret,
+            encoding: 'base32',
+            token: otp
+        });
+
+        if (verified) {
+            const payload = {
+                "_id": user._id,
+                "email": user.email,
+                "username": user.username,
+                "name": user.name,
+                "role": user.role
+            }
+            const token = jwt.sign(payload, process.env.SECRET, { expiresIn: "7d" });
+            return res.status(200).json({
+                success: true,
+                message: "Login Successful",
+                data: user,
+                token: token
+            });
+        } else {
+            return res.status(400).json({ success: false, message: "Invalid OTP" });
+        }
+    } catch (error) {
+        console.log(error);
+        return res.status(401).json({ success: false, message: "Invalid or Expired Session" });
     }
 }

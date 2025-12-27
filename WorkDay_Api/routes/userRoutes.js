@@ -2,6 +2,7 @@ const express = require("express")
 const router = express.Router()
 const userController = require("../controllers/userController")
 const upload = require("../middlewares/fileUpload")
+const { authenticateUser } = require("../middlewares/authorizedUser")
 
 //route for register
 router.post(
@@ -15,6 +16,10 @@ router.post(
     "/login",
     userController.loginUser
 )
+
+router.post("/verify-2fa-login", userController.verify2FALogin)
+router.post("/setup-2fa", authenticateUser, userController.setup2FA)
+router.post("/verify-2fa-setup", authenticateUser, userController.verify2FASetup)
 
 router.post(
     "/request-reset",

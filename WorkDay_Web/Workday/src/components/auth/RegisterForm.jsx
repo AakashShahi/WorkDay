@@ -15,11 +15,16 @@ import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { useRegisterUserTan } from '../../hooks/useRegisterUserTan';
 
+import ReCAPTCHA from "react-google-recaptcha";
+import { toast } from 'react-toastify';
+
 export default function RegisterForm() {
     const navigate = useNavigate();
     const [showPassword, setShowPassword] = useState(false);
     const togglePassword = () => setShowPassword(prev => !prev);
     const { mutate, isPending } = useRegisterUserTan();
+    const [captchaToken, setCaptchaToken] = useState(null);
+    const recaptchaRef = React.useRef(null);
 
     const [passwordChecklist, setPasswordChecklist] = useState({
         length: false,
@@ -67,9 +72,19 @@ export default function RegisterForm() {
         },
         validationSchema,
         onSubmit: (data) => {
+            if (!captchaToken) {
+                toast.error("Please verify the captcha");
+                return;
+            }
             const { confirmPassword, ...payload } = data;
+            payload.captchaToken = captchaToken;
             mutate(payload, {
-                onSuccess: () => navigate("/")
+                onSuccess: () => navigate("/"),
+                onError: (error) => {
+                    toast.error(error.response?.data?.message || "Registration failed");
+                    if (recaptchaRef.current) recaptchaRef.current.reset();
+                    setCaptchaToken(null);
+                }
             });
         }
     });
@@ -266,10 +281,19 @@ export default function RegisterForm() {
                             )}
                         </div>
 
+                        {/* Captcha */}
+                        <div className="flex justify-center my-4">
+                            <ReCAPTCHA
+                                sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY || "YOUR_SITE_KEY"}
+                                onChange={setCaptchaToken}
+                                ref={recaptchaRef}
+                            />
+                        </div>
+
                         {/* Submit Button */}
                         <button
                             type="submit"
-                            disabled={isPending}
+                            disabled={isPending || !captchaToken}
                             className="w-full bg-blue-600 text-white font-bold py-2 rounded-md hover:bg-black transition-colors duration-300 disabled:opacity-60"
                         >
                             {isPending ? "Registering..." : "Register as Worker"}
