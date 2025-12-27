@@ -1,0 +1,117 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Root CSS variables or defaults */
+:root {
+  font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Fix layout-breaking styles */
+html,
+body,
+#root {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: auto;
+  /* Important: allow content to scroll if needed */
+  background-color: #ffffff;
+  color: #213547;
+  font-family: 'Inter', sans-serif;
+}
+
+.react-calendar.custom-calendar {
+  width: 100%;
+  border: none;
+  font-family: Inter, sans-serif;
+  line-height: 1.6;
+}
+
+.react-calendar__tile--active {
+  background-color: #FA5804 !important;
+  color: white !important;
+}
+
+.react-calendar .react-calendar__tile.bg-\[\#FA5804\] {
+  background-color: #FA5804 !important;
+  color: white !important;
+  border-radius: 50%;
+}
+
+.react-calendar .react-calendar__tile.bg-\[\#FA5804\]:hover {
+  background-color: #e45500 !important;
+  /* Slightly darker orange on hover */
+  color: white !important;
+}
+
+.react-calendar__tile--highlight {
+  background-color: #FA5804 !important;
+  color: white !important;
+  border-radius: 50%;
+}
+
+.react-calendar__tile--highlight:hover {
+  background-color: #e45500 !important;
+  color: white !important;
+}
+
+/* Avoid centering the entire layout */
+body {
+  display: block;
+}
+
+/* Buttons and links remain styled */
+a {
+  font-weight: 500;
+  color: #646cff;
+  text-decoration: none;
+}
+
+a:hover {
+  color: #535bf2;
+}
+
+button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #f9f9f9;
+  cursor: pointer;
+  transition: border-color 0.25s;
+}
+
+button:hover {
+  border-color: #646cff;
+}
+
+button:focus,
+button:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
+}
+
+/* Light mode preference */
+@media (prefers-color-scheme: light) {
+  html {
+    background-color: #ffffff;
+    color: #213547;
+  }
+
+  a:hover {
+    color: #747bff;
+  }
+
+  button {
+    background-color: #f9f9f9;
+  }
+}
