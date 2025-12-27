@@ -1,8 +1,8 @@
 const express = require("express")
 const router = express.Router()
+const { authenticateUser } = require("../middlewares/authorizedUser")
 const userController = require("../controllers/userController")
 const upload = require("../middlewares/fileUpload")
-const { authenticateUser } = require("../middlewares/authorizedUser")
 
 //route for register
 router.post(
@@ -30,5 +30,7 @@ router.post(
     "/reset-password/:token",
     userController.resetPassword
 )
+
+router.post("/google", userController.googleLogin)
 
 module.exports = router

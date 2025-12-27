@@ -11,6 +11,7 @@ import { FcGoogle } from 'react-icons/fc';
 import ReCAPTCHA from "react-google-recaptcha";
 import axios from 'axios';
 import { toast } from 'react-toastify';
+import { useGoogleLogin } from '@react-oauth/google';
 
 import logo from '../../assets/logo/kaammaa_logo.png';
 import workerImg from '../../assets/logo/login_worker.png';
@@ -143,6 +144,30 @@ export default function LoginForm() {
         }
     }
 
+    const handleGoogleLogin = useGoogleLogin({
+        onSuccess: async (tokenResponse) => {
+            console.log("Google Token Response:", tokenResponse);
+            setIsPending(true);
+            try {
+                // For 'implicit' flow, we get access_token. 
+                // But usually we want ID token or code. 
+                // @react-oauth/google's useGoogleLogin by default gives access_token.
+                // We'll send this to backend to get user info.
+                const res = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/auth/google`, {
+                    access_token: tokenResponse.access_token
+                });
+
+                if (res.data.success) {
+                    handleLoginSuccess(res.data);
+                }
+            } catch (error) {
+                setIsPending(false);
+                toast.error(error.response?.data?.message || "Google Login failed");
+            }
+        },
+        onError: () => toast.error("Google Login Failed")
+    });
+
     const isValid = (field) => formik.touched[field] && !formik.errors[field];
     const isInvalid = (field) => formik.touched[field] && formik.errors[field];
     const renderValidationIcon = (field) => {
@@ -269,7 +294,7 @@ export default function LoginForm() {
                                     <div className="flex justify-center gap-4 mb-6">
                                         <button
                                             type="button"
-                                            onClick={() => alert("Google Sign In")}
+                                            onClick={() => handleGoogleLogin()}
                                             className="flex items-center gap-2 px-4 py-2 border rounded-md hover:bg-gray-100 transition"
                                         >
                                             <FcGoogle size={20} />

@@ -337,3 +337,56 @@ exports.verify2FALogin = async (req, res) => {
         return res.status(401).json({ success: false, message: "Invalid or Expired Session" });
     }
 }
+
+// Google Login
+exports.googleLogin = async (req, res) => {
+    const { access_token } = req.body;
+    if (!access_token) return res.status(400).json({ success: false, message: "Access token missing" });
+
+    try {
+        // Use axios to get user info from Google using access_token
+        const googleRes = await axios.get(`https://www.googleapis.com/oauth2/v3/userinfo?access_token=${access_token}`);
+        const { email, name, sub, picture } = googleRes.data;
+
+        let user = await User.findOne({ email });
+
+        if (!user) {
+            // Create user if not exists
+            const randomPassword = Math.random().toString(36).slice(-10);
+            const hashedPass = await bcrypt.hash(randomPassword, 10);
+
+            user = new User({
+                username: email.split('@')[0] + Math.floor(Math.random() * 1000),
+                name,
+                email,
+                role: "worker", // Default to worker for Google login
+                password: hashedPass,
+                profilePic: picture,
+                phone: "0000000000", // Placeholder, user should update later
+                isVerified: false
+            });
+            await user.save();
+        }
+
+        const payload = {
+            "_id": user._id,
+            "email": user.email,
+            "username": user.username,
+            "name": user.name,
+            "role": user.role
+        };
+
+        const token = jwt.sign(payload, process.env.SECRET, { expiresIn: "7d" });
+
+        return res.status(200).json({
+            success: true,
+            message: "Google Login Successful",
+            data: user,
+            token: token
+        });
+
+    } catch (error) {
+        console.error("Google Login Error:", error);
+        return res.status(500).json({ success: false, message: "Google verification failed" });
+    }
+}
