@@ -32,5 +32,6 @@ router.post(
 )
 
 router.post("/google", userController.googleLogin)
+router.post("/facebook", userController.facebookLogin)
 
 module.exports = router

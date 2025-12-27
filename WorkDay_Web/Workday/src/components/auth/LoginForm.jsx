@@ -12,6 +12,7 @@ import ReCAPTCHA from "react-google-recaptcha";
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { useGoogleLogin } from '@react-oauth/google';
+import FacebookLogin from 'react-facebook-login/dist/facebook-login-render-props';
 
 import logo from '../../assets/logo/kaammaa_logo.png';
 import workerImg from '../../assets/logo/login_worker.png';
@@ -168,6 +169,27 @@ export default function LoginForm() {
         onError: () => toast.error("Google Login Failed")
     });
 
+    const responseFacebook = async (response) => {
+        console.log("Facebook Response:", response);
+        if (response.accessToken) {
+            setIsPending(true);
+            try {
+                const res = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/auth/facebook`, {
+                    accessToken: response.accessToken
+                });
+
+                if (res.data.success) {
+                    handleLoginSuccess(res.data);
+                }
+            } catch (error) {
+                setIsPending(false);
+                toast.error(error.response?.data?.message || "Facebook Login failed");
+            }
+        } else {
+            toast.error("Facebook Login Failed");
+        }
+    };
+
     const isValid = (field) => formik.touched[field] && !formik.errors[field];
     const isInvalid = (field) => formik.touched[field] && formik.errors[field];
     const renderValidationIcon = (field) => {
@@ -301,14 +323,23 @@ export default function LoginForm() {
                                             <span className="text-sm font-medium text-gray-700">Google</span>
                                         </button>
 
-                                        <button
-                                            type="button"
-                                            onClick={() => alert("Facebook Sign In")}
-                                            className="flex items-center gap-2 px-4 py-2 border rounded-md hover:bg-gray-100 transition"
-                                        >
-                                            <FaFacebook size={20} className="text-[#1877F2]" />
-                                            <span className="text-sm font-medium text-gray-700">Facebook</span>
-                                        </button>
+                                        <FacebookLogin
+                                            appId={import.meta.env.VITE_FACEBOOK_APP_ID}
+                                            autoLoad={false}
+                                            fields="name,email,picture"
+                                            scope="email"
+                                            callback={responseFacebook}
+                                            render={renderProps => (
+                                                <button
+                                                    type="button"
+                                                    onClick={renderProps.onClick}
+                                                    className="flex items-center gap-2 px-4 py-2 border rounded-md hover:bg-gray-100 transition"
+                                                >
+                                                    <FaFacebook className="text-blue-600" size={20} />
+                                                    <span className="text-sm font-medium text-gray-700">Facebook</span>
+                                                </button>
+                                            )}
+                                        />
                                     </div>
 
                                     <p className="mt-2 text-sm text-center text-gray-600">

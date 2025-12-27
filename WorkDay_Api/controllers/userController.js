@@ -390,3 +390,59 @@ exports.googleLogin = async (req, res) => {
         return res.status(500).json({ success: false, message: "Google verification failed" });
     }
 }
+// Facebook Login
+exports.facebookLogin = async (req, res) => {
+    const { accessToken } = req.body;
+    if (!accessToken) return res.status(400).json({ success: false, message: "Access token missing" });
+
+    try {
+        // Use axios to get user info from Facebook Graph API
+        const facebookUrl = `https://graph.facebook.com/me?fields=id,name,email,picture&access_token=${accessToken}`;
+        const facebookRes = await axios.get(facebookUrl);
+        const { email, name, picture } = facebookRes.data;
+
+        // Note: Facebook might not provide email if not authorized or not set on account
+        const userEmail = email || `${facebookRes.data.id}@facebook.com`;
+
+        let user = await User.findOne({ email: userEmail });
+
+        if (!user) {
+            // Create user if not exists
+            const randomPassword = Math.random().toString(36).slice(-10);
+            const hashedPass = await bcrypt.hash(randomPassword, 10);
+
+            user = new User({
+                username: (name ? name.replace(/\s/g, '').toLowerCase() : 'fbuser') + Math.floor(Math.random() * 1000),
+                name: name || "Facebook User",
+                email: userEmail,
+                role: "worker", // Default to worker
+                password: hashedPass,
+                profilePic: picture?.data?.url || "",
+                phone: "0000000000",
+                isVerified: false
+            });
+            await user.save();
+        }
+
+        const payload = {
+            "_id": user._id,
+            "email": user.email,
+            "username": user.username,
+            "name": user.name,
+            "role": user.role
+        };
+
+        const token = jwt.sign(payload, process.env.SECRET, { expiresIn: "7d" });
+
+        return res.status(200).json({
+            success: true,
+            message: "Facebook Login Successful",
+            data: user,
+            token: token
+        });
+
+    } catch (error) {
+        console.error("Facebook Login Error:", error.response?.data || error.message);
+        return res.status(500).json({ success: false, message: "Facebook verification failed" });
+    }
+}
