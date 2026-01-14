@@ -151,6 +151,8 @@ exports.loginUser = async (req, res) => {
         // 2. Check 2FA
         if (getUser.isTwoFactorEnabled) {
             console.log("2FA required for user:", getUser.username);
+            // Issue a short-lived temporary token restricted to the '2fa_pending' role.
+            // This prevents unauthorized access until the OTP is verified.
             const tempToken = jwt.sign(
                 { id: getUser._id, role: '2fa_pending' },
                 process.env.SECRET,
