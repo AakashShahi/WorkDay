@@ -14,6 +14,9 @@ The platform implements several modern security standards:
 - **Two-Factor Authentication (2FA)**: Enhanced account security via TOTP.
 - **Social OAuth**: Secure login with Google and Facebook.
 
+> [!NOTE]
+> All security features listed above have been audited and hardened as of Jan 2026.
+
 For a detailed breakdown of implementation and manual verification steps, see [SECURITY.md](SECURITY.md).
 
 ## Getting Started
