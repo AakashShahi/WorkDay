@@ -29,7 +29,8 @@ exports.regiterUser = async (req, res) => {
         return res.status(500).json({ success: false, message: "Captcha verification server error" });
     }
 
-    // 2. Validate Password Complexity
+    // 2. Validate Password Complexity (Min 8 chars, 1 Upper, 1 Lower, 1 Number, 1 Special)
+    // This ensures security standards are met even if the frontend validation is bypassed.
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
     if (!passwordRegex.test(password)) {
         return res.status(400).json({
