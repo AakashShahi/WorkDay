@@ -29,6 +29,15 @@ exports.regiterUser = async (req, res) => {
         return res.status(500).json({ success: false, message: "Captcha verification server error" });
     }
 
+    // 2. Validate Password Complexity
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    if (!passwordRegex.test(password)) {
+        return res.status(400).json({
+            success: false,
+            message: "Password must be at least 8 characters long and include an uppercase letter, a number, and a special character."
+        });
+    }
+
     try {
         const existingUser = await User.findOne(
             {
@@ -123,9 +132,10 @@ exports.loginUser = async (req, res) => {
         )
 
         if (!getUser) {
+            // Using generic error messages to prevent username enumeration (account discovery)
             console.log("User not found:", email || username);
             return res.status(400).json(
-                { "success": false, "message": "User not found" }
+                { "success": false, "message": "Invalid email/username or password" }
             )
         }
 
@@ -133,7 +143,7 @@ exports.loginUser = async (req, res) => {
         if (!passwordCheck) {
             console.log("Invalid password for user:", getUser.username);
             return res.status(400).json(
-                { "success": false, "message": "Invalid Credentials" }
+                { "success": false, "message": "Invalid email/username or password" }
             )
         }
 
