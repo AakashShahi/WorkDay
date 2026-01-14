@@ -23,6 +23,7 @@ const customerNotificationRoute = require("./routes/customer/customerNotificatio
 
 
 const path = require("path")
+const rateLimit = require("express-rate-limit");
 
 //Cors Setup
 const cors = require("cors")
@@ -41,8 +42,19 @@ app.use(express.json())
 
 app.use("/uploads", express.static(path.join(__dirname, "uploads")))
 
+// Rate Limiter for Auth Routes
+// Rate Limiter for Auth Routes: Protects against brute-force and credential stuffing
+// by limiting the number of requests from a single IP to 10 every 15 minutes.
+const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 10, // Limit each IP to 10 requests per windowMs
+    message: { success: false, message: "Too many login/registration attempts, please try again after 15 minutes" },
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+
 //User rgistration/login Route
-app.use("/api/auth", userRouter)
+app.use("/api/auth", authLimiter, userRouter)
 
 //Admin Management
 app.use("/api/admin/users", adminUserRoutes)
