@@ -1,40 +1,102 @@
 # Web Security Documentation - WorkDay
 
-This document outlines the web security features implemented in the WorkDay application to ensure user data protection and prevent unauthorized access.
-
-## 1. Google reCAPTCHA (v2)
-To protect against automated attacks, bots, and brute-force attempts, Google reCAPTCHA is integrated into both the registration and login flows.
-
-*   **How it is applied:**
-    *   **Frontend:** The `react-google-recaptcha` component is embedded in [LoginForm.jsx](file:///e:/shahi/Documents/Developer/Cw2/WorkDay/WorkDay_Web/Workday/src/components/auth/LoginForm.jsx) and [RegisterForm.jsx](file:///e:/shahi/Documents/Developer/Cw2/WorkDay/WorkDay_Web/Workday/src/components/auth/RegisterForm.jsx). Users must solve the challenge before the "Login" or "Register" buttons become active.
-    *   **Backend:** Upon form submission, the `captchaToken` is sent to the API. The [userController.js](file:///e:/shahi/Documents/Developer/Cw2/WorkDay/WorkDay_Api/controllers/userController.js) verifies this token using Google's verification API before processing any sensitive logic.
-*   **Why it is used:** To ensure that interactions are performed by humans and to mitigate "Credential Stuffing" and "Bot Registration" attacks.
+This document outlines the web security features implemented in the WorkDay application. Each implementation is detailed with its rationale, location, and testing procedures.
 
 ---
 
-## 2. Two-Factor Authentication (2FA / TOTP)
-We provide an optional but highly recommended 2FA layer using Time-based One-Time Passwords (TOTP).
+## 1. Google reCAPTCHA (v2)
 
-*   **How it is applied:**
-    *   **Implementation:** Powered by the `speakeasy` library on the backend and `qrcode.react` on the frontend.
-    *   **Setup Path:** Users can enable 2FA via the [TwoFactorSetup.jsx](file:///e:/shahi/Documents/Developer/Cw2/WorkDay/Workday_Web/Workday/src/components/auth/TwoFactorSetup.jsx) component. A unique secret is generated, and a QR code is presented for scanning with apps like Google Authenticator or Authy.
-    *   **Login Flow:** When a user with 2FA enabled attempts to log in ([userController.js:L141](file:///e:/shahi/Documents/Developer/Cw2/WorkDay/WorkDay_Api/controllers/userController.js#L141)), the system validates their password first, then issues a short-lived "tempToken" and prompts for an OTP. The final JWT is only issued after a successful OTP verification.
-*   **Why it is used:** To provide "Multi-Factor Authentication" (Something you know + Something you have). This prevents account takeover even if the user's password is stolen.
+To protect against automated attacks, bots, and brute-force attempts.
+
+*   **How it is applied:** 
+    Users must solve a visual/audio challenge before submitting authentication forms. The frontend sends a token to the backend, which is then verified against Google's servers.
+*   **Where it is applied:**
+    *   **Frontend:** [LoginForm.jsx](file:///e:/shahi/Documents/Developer/Cw2/WorkDay/WorkDay_Web/Workday/src/components/auth/LoginForm.jsx) and [RegisterForm.jsx](file:///e:/shahi/Documents/Developer/Cw2/WorkDay/WorkDay_Web/Workday/src/components/auth/RegisterForm.jsx).
+    *   **Backend:** [userController.js](file:///e:/shahi/Documents/Developer/Cw2/WorkDay/WorkDay_Api/controllers/userController.js) (verification logic).
+*   **Why it is applied:** 
+    To ensure interactions are human-led and mitigate "Credential Stuffing" and automated registration bots.
+*   **Testing:**
+    *   **General:** Attempt to login/register without checking the CAPTCHA. The form should block submission or the server should reject it.
+    *   **Burp Suite:** Capture a login request. In Repeater, remove or change the `captchaToken` parameter. The server must return a `400` error.
+
+---
+
+## 2. Two-Factor Authentication (2FA)
+
+Provides an extra layer of security beyond just a password.
+
+*   **How it is applied:** 
+    Uses Time-based One-Time Passwords (TOTP). Users scan a QR code with an app (like Google Authenticator). During login, a 6-digit code is required after valid password entry.
+*   **Where it is applied:**
+    *   **Frontend:** [TwoFactorSetup.jsx](file:///e:/shahi/Documents/Developer/Cw2/WorkDay/Workday_Web/Workday/src/components/auth/TwoFactorSetup.jsx) and [LoginForm.jsx](file:///e:/shahi/Documents/Developer/Cw2/WorkDay/WorkDay_Web/Workday/src/components/auth/LoginForm.jsx) (OTP prompt).
+    *   **Backend:** [userController.js](file:///e:/shahi/Documents/Developer/Cw2/WorkDay/WorkDay_Api/controllers/userController.js) (logic for `setup2FA` and `verify2FALogin`).
+*   **Why it is applied:** 
+    Protects accounts even if passwords are compromised (Something you know + Something you have).
+*   **Testing:**
+    *   **General:** Enable 2FA, log out, and attempt to log in. Ensure the system asks for the 6-digit code.
+    *   **Burp Suite:** Attempt to access a protected resource after a successful password check but *before* providing the OTP. Ensure the `tempToken` only allows 2FA verification and nothing else.
 
 ---
 
 ## 3. Social OAuth Integration (Google & Facebook)
-Users can sign in securely using their existing Google or Facebook accounts.
 
-*   **How it is applied:**
-    *   **Google Login:** Implemented using `@react-oauth/google`. The frontend handles the implicit flow to obtain an `access_token`, which is then verified by the backend ([userController.js:L342](file:///e:/shahi/Documents/Developer/Cw2/WorkDay/WorkDay_Api/controllers/userController.js#L342)) using the `googleapis.com` userinfo endpoint.
-    *   **Facebook Login:** Implemented using `react-facebook-login`. The frontend obtains a Facebook access token, and the backend ([userController.js:L394](file:///e:/shahi/Documents/Developer/Cw2/WorkDay/WorkDay_Api/controllers/userController.js#L394)) verifies it against the Facebook Graph API.
-    *   **Seamless Onboarding:** If a social user doesn't have an account, the system automatically creates one using their verified email and profile picture, assigning a secure random password.
-*   **Why it is used:** To improve user experience with "Single Sign-On" (SSO) while leveraging the advanced security infrastructure of major tech platforms.
+Secure and convenient login using trusted third-party providers.
+
+*   **How it is applied:** 
+    The frontend uses official SDKs to obtain an `access_token`. This token is sent to our backend, which verifies its validity with Google/Facebook APIs before issuing a JWT.
+*   **Where it is applied:**
+    *   **Frontend:** [LoginForm.jsx](file:///e:/shahi/Documents/Developer/Cw2/WorkDay/WorkDay_Web/Workday/src/components/auth/LoginForm.jsx) (Google/Facebook buttons).
+    *   **Backend:** [userController.js](file:///e:/shahi/Documents/Developer/Cw2/WorkDay/WorkDay_Api/controllers/userController.js) (`googleLogin` and `facebookLogin` methods).
+*   **Why it is applied:** 
+    Leverages high-security standards of major platforms and reduces password fatigue for users.
+*   **Testing:**
+    *   **General:** Click the "Sign in with Google" button and complete the flow. Verify a user record is created in the database.
+    *   **Burp Suite:** Capture the social login request. In Repeater, change the `access_token` to a bogus value. Ensure the server returns a `500` or `401` verification failed error.
 
 ---
 
-## 4. Other Security Measures
-*   **Password Hashing:** All passwords are salted and hashed using `bcrypt` (10 rounds) before storage.
-*   **Encrypted Sessions:** Authentication is handled via JSON Web Tokens (JWT), signed with a server-side secret.
-*   **Input Validation:** Strict validation using `Yup` and `Formik` on the frontend and manual checks on the backend to prevent malformed data injection.
+## 4. Prevention of Username Enumeration
+
+Protects user privacy and prevents hackers from building a list of valid accounts.
+
+*   **How it is applied:** 
+    The API returns a generic error message for any authentication failure.
+*   **Where it is applied:**
+    *   **Backend:** [userController.js](file:///e:/shahi/Documents/Developer/Cw2/WorkDay/WorkDay_Api/controllers/userController.js) (Login logic).
+*   **Why it is applied:** 
+    Prevents attackers from using different responses (like "User not found" vs "Wrong password") to discover valid emails on the system.
+*   **Testing:**
+    *   **General:** Try to log in with an email that doesn't exist. Then try with a valid email but a wrong password.
+    *   **Burp Suite (Repeater):** Observe that the HTTP Status (`400`), the message (`"Invalid email/username or password"`), and the response length are identical for both scenarios.
+
+---
+
+## 5. Brute-Force & Rate Limiting
+
+Disrupts automated attempts to guess passwords.
+
+*   **How it is applied:** 
+    Enforces a strict limit on the number of requests an IP address can make to auth routes within a specific time window.
+*   **Where it is applied:**
+    *   **Backend:** [index.js](file:///e:/shahi/Documents/Developer/Cw2/WorkDay/WorkDay_Api/index.js) (Rate limiting middleware applied to `/api/auth`).
+*   **Why it is applied:** 
+    To prevent "Credential Stuffing" and automated dictionary attacks.
+*   **Testing:**
+    *   **General:** Rapidly refresh or submit the login form multiple times.
+    *   **Burp Suite (Intruder):** Send a login request to Intruder. Set a payload for the password and run it 15+ times. Observe that after 10 requests, the status changes to `429 Too Many Requests`.
+
+---
+
+## 6. Backend Password Complexity Enforcement
+
+Ensures security standards cannot be bypassed by skipping the frontend.
+
+*   **How it is applied:** 
+    The server validates the password string against a regex before processing registration or reset requests.
+*   **Where it is applied:**
+    *   **Backend:** [userController.js](file:///e:/shahi/Documents/Developer/Cw2/WorkDay/WorkDay_Api/controllers/userController.js) (Regex validation in `registerUser`).
+*   **Why it is applied:** 
+    To ensure all passwords meet the security policy (8+ chars, Uppercase, Number, Special Char) even if a user bypasses the UI using tools like Postman.
+*   **Testing:**
+    *   **General:** Try to register via the website with a simple password (the UI should block it).
+    *   **Burp Suite (Repeater):** Capture a registration request and change the password to `12345`. The server MUST return a `400` error with the complexity requirement message.
