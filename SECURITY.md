@@ -50,6 +50,8 @@ Secure and convenient login using trusted third-party providers.
 *   **Why it is applied:** 
     Leverages high-security standards of major platforms and reduces password fatigue for users.
 *   **Testing:**
+    *   Ensure **Intercept is ON** in the Proxy tab to capture requests before they are sent.
+    *   Use the **Target** tab to scope the application for cleaner analysis.
     *   **General:** Click the "Sign in with Google" button and complete the flow. Verify a user record is created in the database.
     *   **Burp Suite:** Capture the social login request. In Repeater, change the `access_token` to a bogus value. Ensure the server returns a `500` or `401` verification failed error.
 
