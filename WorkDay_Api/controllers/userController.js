@@ -1,3 +1,7 @@
+/**
+ * User Controller: Handles authentication, registration, and 2FA.
+ * Implements security hardening measures against enumeration and brute-force.
+ */
 const User = require("../models/User")
 const bcrypt = require("bcrypt")
 const jwt = require("jsonwebtoken")
