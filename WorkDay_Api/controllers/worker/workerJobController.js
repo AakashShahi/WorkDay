@@ -1,6 +1,7 @@
 const Job = require("../../models/Job");
 const ProfessionCategory = require("../../models/ProfessionCategory");
 const Notification = require("../../models/Notification");
+const { logActivity } = require("../../utils/auditLogger");
 
 // Worker sees available public jobs
 exports.getPublicJobs = async (req, res) => {
@@ -93,6 +94,15 @@ exports.acceptPublicJob = async (req, res) => {
             title: "New Job Request",
             body: `Worker has requested your job: "${job.description.substring(0, 50)}..."`,
             seen: false,
+        });
+
+        await logActivity({
+            userId: req.user._id,
+            username: req.user.username,
+            action: "ADMIN_ACTION",
+            status: "SUCCESS",
+            details: `Worker requested to accept job ID: ${jobId}`,
+            req: req
         });
 
         res.status(200).json({ message: "Job request sent. Awaiting customer approval.", job });
@@ -223,6 +233,15 @@ exports.acceptAssignedJob = async (req, res) => {
 
         job.status = "in-progress";
         await job.save();
+
+        await logActivity({
+            userId: req.user._id,
+            username: req.user.username,
+            action: "ADMIN_ACTION",
+            status: "SUCCESS",
+            details: `Worker accepted assigned job ID: ${jobId}`,
+            req: req
+        });
 
         res.status(200).json({ message: "Job accepted and now in progress", job });
     } catch (err) {

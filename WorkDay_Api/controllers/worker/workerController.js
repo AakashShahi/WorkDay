@@ -1,5 +1,6 @@
 const User = require("../../models/User")
 const bcrypt = require("bcrypt")
+const { logActivity } = require("../../utils/auditLogger");
 
 exports.getWorkerProfile = async (req, res) => {
     try {
@@ -32,6 +33,7 @@ exports.updateWorkerProfile = async (req, res) => {
             "certificateUrl", // optional
             "phone",
             "profession",
+            "otp",
         ];
 
         const updates = {};
@@ -69,6 +71,18 @@ exports.updateWorkerProfile = async (req, res) => {
             }
         }
 
+        // OTP Verification
+        const user = await User.findById(req.user.id);
+        if (!updates.otp || user.updateOTP !== updates.otp || user.updateOTPExpires < Date.now()) {
+            return res.status(400).json({ success: false, message: "Invalid or expired OTP. Please request a new one." });
+        }
+
+        // Clear OTP after successful validation (but before save to avoid reuse if save fails later, 
+        // actually better to clear at the very end or just before findByIdAndUpdate)
+        updates.updateOTP = undefined;
+        updates.updateOTPExpires = undefined;
+        delete updates.otp; // Don't save 'otp' field to DB
+
         const updatedUser = await User.findByIdAndUpdate(req.user.id, updates, {
             new: true,
             runValidators: true,
@@ -92,30 +106,60 @@ exports.updateWorkerProfile = async (req, res) => {
 
 exports.changeWorkerPassword = async (req, res) => {
     try {
-        const { currentPassword, newPassword } = req.body;
+        const { currentPassword, newPassword, otp } = req.body;
 
         const user = await User.findById(req.user.id);
         if (!user || user.role !== "worker") {
             return res.status(404).json({ success: false, message: "Worker not found" });
         }
 
+        // 1. Verify OTP
+        if (!otp || user.updateOTP !== otp || user.updateOTPExpires < Date.now()) {
+            return res.status(400).json({ success: false, message: "Invalid or expired OTP" });
+        }
+
+        // 2. Check current password
         const isMatch = await bcrypt.compare(currentPassword, user.password);
         if (!isMatch) {
             return res.status(400).json({ success: false, message: "Incorrect current password" });
         }
 
-        const isSameAsOld = await bcrypt.compare(newPassword, user.password);
-        if (isSameAsOld) {
-            return res.status(400).json({ success: false, message: "New password cannot be the same as the old password" });
+        // 3. Check password history (Last 2: Current and Previous)
+        const isSameAsCurrent = await bcrypt.compare(newPassword, user.password);
+        if (isSameAsCurrent) {
+            return res.status(400).json({ success: false, message: "New password cannot be the same as the current password" });
+        }
+
+        for (const historyHash of user.passwordHistory) {
+            const isMatchHistory = await bcrypt.compare(newPassword, historyHash);
+            if (isMatchHistory) {
+                return res.status(400).json({ success: false, message: "New password cannot be one of your last 2 passwords" });
+            }
         }
 
         const salt = await bcrypt.genSalt(10);
         const hashedNewPassword = await bcrypt.hash(newPassword, salt);
 
+        // Update history: keep only last (previous) password
+        user.passwordHistory = [user.password];
         user.password = hashedNewPassword;
+
+        // Clear OTP
+        user.updateOTP = undefined;
+        user.updateOTPExpires = undefined;
+
         await user.save();
 
-        return res.status(200).json({ success: true, message: "Password changed successfully" });
+        await logActivity({
+            userId: req.user._id,
+            username: req.user.username,
+            action: "PASSWORD_CHANGE",
+            status: "SUCCESS",
+            details: "Worker password changed successfully.",
+            req: req
+        });
+
+        return res.status(200).json({ success: true, message: "Password updated successfully" });
     } catch (err) {
         console.error("Error changing password:", err);
         return res.status(500).json({ success: false, message: "Server error" });

@@ -9,6 +9,7 @@ const nodemailer = require("nodemailer")
 const speakeasy = require("speakeasy")
 const qrcode = require("qrcode")
 const axios = require("axios")
+const { logActivity } = require("../utils/auditLogger");
 
 //Registration COntroller
 exports.regiterUser = async (req, res) => {
@@ -26,6 +27,12 @@ exports.regiterUser = async (req, res) => {
         const response = await axios.post(googleVerifyUrl);
         if (!response.data.success) {
             console.log("Captcha verification failed in registration:", response.data);
+            await logActivity({
+                action: "REGISTRATION",
+                status: "FAILURE",
+                details: `Captcha verification failed for ${username}`,
+                req: req
+            });
             return res.status(400).json({ success: false, message: "Captcha verification failed" });
         }
     } catch (error) {
@@ -37,6 +44,12 @@ exports.regiterUser = async (req, res) => {
     // This ensures security standards are met even if the frontend validation is bypassed.
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
     if (!passwordRegex.test(password)) {
+        await logActivity({
+            action: "REGISTRATION",
+            status: "FAILURE",
+            details: `Password complexity validation failed for ${username}`,
+            req: req
+        });
         return res.status(400).json({
             success: false,
             message: "Password must be at least 8 characters long and include an uppercase letter, a number, and a special character."
@@ -52,6 +65,12 @@ exports.regiterUser = async (req, res) => {
 
         if (existingUser) {
             console.log("User already exists:", username, email);
+            await logActivity({
+                action: "REGISTRATION",
+                status: "FAILURE",
+                details: `Registration attempted with existing username/email: ${username} / ${email}`,
+                req: req
+            });
             return res.status(400).json(
                 {
                     "success": false, "message": "Email or username already in use"
@@ -83,6 +102,15 @@ exports.regiterUser = async (req, res) => {
 
         await newUser.save()
         console.log("User registered successfully:", username);
+
+        await logActivity({
+            userId: newUser._id,
+            username: newUser.username,
+            action: "REGISTRATION",
+            status: "SUCCESS",
+            details: `New user registered as ${role}: ${username}`,
+            req: req
+        });
 
         return res.status(200).json(
             { "success": true, "message": `${role} registered` }
@@ -137,26 +165,104 @@ exports.loginUser = async (req, res) => {
         )
 
         if (!getUser) {
-            // Using generic error messages to prevent username enumeration (account discovery)
             console.log("User not found:", email || username);
+            await logActivity({
+                action: "LOGIN_FAILURE",
+                status: "FAILURE",
+                details: `Login attempt for non-existent user: ${email || username}`,
+                req: req
+            });
             return res.status(400).json(
                 { "success": false, "message": "Invalid email/username or password" }
             )
+        }
+
+        // Check if account is locked
+        if (getUser.lockUntil) {
+            if (getUser.lockUntil > Date.now()) {
+                const remainingLockTime = Math.ceil((getUser.lockUntil - Date.now()) / (60 * 1000));
+
+                await logActivity({
+                    userId: getUser._id,
+                    username: getUser.username,
+                    action: "LOGIN_FAILURE",
+                    status: "WARNING",
+                    details: `Login attempt while account locked. Remaining: ${remainingLockTime} mins.`,
+                    req: req
+                });
+
+                return res.status(403).json({
+                    success: false,
+                    message: `Account is locked for ${remainingLockTime} more minutes.`,
+                    isLocked: true,
+                    lockUntil: getUser.lockUntil
+                });
+            } else {
+                // Lock expired, reset attempts
+                getUser.loginAttempts = 0;
+                getUser.lockUntil = undefined;
+                await getUser.save();
+            }
         }
 
         const passwordCheck = await bcrypt.compare(password, getUser.password)
         if (!passwordCheck) {
             console.log("Invalid password for user:", getUser.username);
-            return res.status(400).json(
-                { "success": false, "message": "Invalid email/username or password" }
-            )
+
+            // Increment login attempts
+            getUser.loginAttempts += 1;
+            let message = "Invalid email/username or password";
+
+            if (getUser.loginAttempts >= 5) {
+                getUser.lockUntil = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+                message = "Too many failed attempts. Account locked for 10 minutes.";
+
+                await logActivity({
+                    userId: getUser._id,
+                    username: getUser.username,
+                    action: "ACCOUNT_LOCKOUT",
+                    status: "FAILURE",
+                    details: "Account locked due to 5 failed login attempts.",
+                    req: req
+                });
+            } else {
+                await logActivity({
+                    userId: getUser._id,
+                    username: getUser.username,
+                    action: "LOGIN_FAILURE",
+                    status: "FAILURE",
+                    details: `Invalid password attempt. Attempt ${getUser.loginAttempts}/5`,
+                    req: req
+                });
+            }
+
+            await getUser.save();
+
+            return res.status(400).json({
+                success: false,
+                message: message,
+                attemptsRemaining: Math.max(0, 5 - getUser.loginAttempts),
+                isLocked: getUser.loginAttempts >= 5
+            });
         }
+
+        // Reset login attempts on successful login
+        getUser.loginAttempts = 0;
+        getUser.lockUntil = undefined;
+        await getUser.save();
+
+        await logActivity({
+            userId: getUser._id,
+            username: getUser.username,
+            action: "LOGIN_SUCCESS",
+            status: "SUCCESS",
+            details: "User logged in successfully.",
+            req: req
+        });
 
         // 2. Check 2FA
         if (getUser.isTwoFactorEnabled) {
             console.log("2FA required for user:", getUser.username);
-            // Issue a short-lived temporary token restricted to the '2fa_pending' role.
-            // This prevents unauthorized access until the OTP is verified.
             const tempToken = jwt.sign(
                 { id: getUser._id, role: '2fa_pending' },
                 process.env.SECRET,
@@ -223,7 +329,7 @@ exports.sendResetLink = async (req, res) => {
             subject: "Reset your password",
             html: `<p>Reset your password.. ${resetUrl}</p>`
         }
-        transporter.sendMail(mailOptions, (err, info) => {
+        transporter.sendMail(mailOptions, async (err, info) => {
             if (err) {
                 console.log(err);
                 return res.status(403).json({
@@ -232,6 +338,15 @@ exports.sendResetLink = async (req, res) => {
                 })
             }
             if (info) console.log(info);
+
+            await logActivity({
+                username: email,
+                action: "ADMIN_ACTION", // Using ADMIN_ACTION or adding a new enum if needed, but for now generic
+                status: "SUCCESS",
+                details: `Password reset link sent to ${email}`,
+                req: req
+            });
+
             return res.status(200).json({
                 success: true,
                 message: "Success"
@@ -254,6 +369,15 @@ exports.resetPassword = async (req, res) => {
         const hased = await bcrypt.hash(password, 10)
 
         await User.findByIdAndUpdate(decoded.id, { password: hased })
+
+        await logActivity({
+            userId: decoded.id,
+            action: "PASSWORD_CHANGE",
+            status: "SUCCESS",
+            details: "Password reset successfully via email link.",
+            req: req
+        });
+
         return res.status(200).json({ sucess: true, message: "Password updated" })
     } catch (error) {
         return res.status(500).json(
@@ -303,8 +427,27 @@ exports.verify2FASetup = async (req, res) => {
         if (verified) {
             user.isTwoFactorEnabled = true;
             await user.save();
+
+            await logActivity({
+                userId: user._id,
+                username: user.username,
+                action: "ADMIN_ACTION",
+                status: "SUCCESS",
+                details: "Two-Factor Authentication enabled.",
+                req: req
+            });
+
             return res.status(200).json({ success: true, message: "2FA Enabled Successfully" });
         } else {
+            await logActivity({
+                userId: user._id,
+                username: user.username,
+                action: "ADMIN_ACTION",
+                status: "FAILURE",
+                details: "2FA Setup verification failed (Invalid OTP).",
+                req: req
+            });
+
             return res.status(400).json({ success: false, message: "Invalid OTP" });
         }
     } catch (error) {
@@ -340,6 +483,16 @@ exports.verify2FALogin = async (req, res) => {
                 "role": user.role
             }
             const token = jwt.sign(payload, process.env.SECRET, { expiresIn: "7d" });
+
+            await logActivity({
+                userId: user._id,
+                username: user.username,
+                action: "LOGIN_SUCCESS",
+                status: "SUCCESS",
+                details: "2FA Login Successful.",
+                req: req
+            });
+
             return res.status(200).json({
                 success: true,
                 message: "Login Successful",
@@ -395,6 +548,15 @@ exports.googleLogin = async (req, res) => {
 
         const token = jwt.sign(payload, process.env.SECRET, { expiresIn: "7d" });
 
+        await logActivity({
+            userId: user._id,
+            username: user.username,
+            action: "LOGIN_SUCCESS",
+            status: "SUCCESS",
+            details: "Google OAuth Login successful.",
+            req: req
+        });
+
         return res.status(200).json({
             success: true,
             message: "Google Login Successful",
@@ -404,6 +566,12 @@ exports.googleLogin = async (req, res) => {
 
     } catch (error) {
         console.error("Google Login Error:", error);
+        await logActivity({
+            action: "LOGIN_FAILURE",
+            status: "FAILURE",
+            details: `Google OAuth verification failed: ${error.message}`,
+            req: req
+        });
         return res.status(500).json({ success: false, message: "Google verification failed" });
     }
 }
@@ -451,6 +619,15 @@ exports.facebookLogin = async (req, res) => {
 
         const token = jwt.sign(payload, process.env.SECRET, { expiresIn: "7d" });
 
+        await logActivity({
+            userId: user._id,
+            username: user.username,
+            action: "LOGIN_SUCCESS",
+            status: "SUCCESS",
+            details: "Facebook OAuth Login successful.",
+            req: req
+        });
+
         return res.status(200).json({
             success: true,
             message: "Facebook Login Successful",
@@ -460,6 +637,111 @@ exports.facebookLogin = async (req, res) => {
 
     } catch (error) {
         console.error("Facebook Login Error:", error.response?.data || error.message);
+        await logActivity({
+            action: "LOGIN_FAILURE",
+            status: "FAILURE",
+            details: `Facebook OAuth verification failed: ${error.message}`,
+            req: req
+        });
         return res.status(500).json({ success: false, message: "Facebook verification failed" });
+    }
+}
+
+// Request OTP for Profile/Password Update
+exports.requestUpdateOTP = async (req, res) => {
+    try {
+        const userId = req.user?.id || req.user?._id;
+        const user = await User.findById(userId);
+        if (!user) return res.status(404).json({ success: false, message: "User not found" });
+
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        user.updateOTP = otp;
+        user.updateOTPExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+        await user.save();
+
+        const mailOptions = {
+            from: `"WorkDay Security" <${process.env.EMAIL_USER}>`,
+            to: user.email,
+            subject: "Security Code for Profile Update",
+            html: `<p>Your 6-digit verification code is: <b>${otp}</b></p><p>This code will expire in 10 minutes.</p>`
+        };
+
+        transporter.sendMail(mailOptions, async (err, info) => {
+            if (err) {
+                console.error("Email Error:", err);
+                return res.status(500).json({ success: false, message: "Failed to send email" });
+            }
+            await logActivity({
+                userId: user._id,
+                username: user.username,
+                action: "SENSITIVE_UPDATE_OTP_REQUEST",
+                status: "SUCCESS",
+                details: "OTP requested for sensitive profile/password update.",
+                req: req
+            });
+
+            res.status(200).json({ success: true, message: "Verification code sent to your email" });
+        });
+    } catch (error) {
+        console.error("OTP Request Error:", error);
+        res.status(500).json({ success: false, message: "Server Error" });
+    }
+};
+
+// Secure Password Update (Handles history check and OTP)
+exports.secureUpdatePassword = async (req, res) => {
+    const { newPassword, otp } = req.body;
+    const userId = req.user?.id || req.user?._id;
+
+    if (!newPassword || !otp) return res.status(400).json({ success: false, message: "Missing password or OTP" });
+
+    try {
+        const user = await User.findById(userId);
+        if (!user) return res.status(404).json({ success: false, message: "User not found" });
+
+        // 1. Verify OTP
+        if (!user.updateOTP || user.updateOTP !== otp || user.updateOTPExpires < Date.now()) {
+            return res.status(400).json({ success: false, message: "Invalid or expired OTP" });
+        }
+
+        // 2. Check Password History (Current and Previous)
+        const isCurrentMatch = await bcrypt.compare(newPassword, user.password);
+        if (isCurrentMatch) {
+            return res.status(400).json({ success: false, message: "New password cannot be the same as the current password" });
+        }
+
+        for (const historyHash of user.passwordHistory) {
+            const isMatch = await bcrypt.compare(newPassword, historyHash);
+            if (isMatch) {
+                return res.status(400).json({ success: false, message: "New password cannot be one of your last 2 passwords" });
+            }
+        }
+
+        // 3. Update Password and History
+        const hashedPass = await bcrypt.hash(newPassword, 10);
+
+        // Update history: keep only the last password hash
+        user.passwordHistory = [user.password];
+        user.password = hashedPass;
+
+        // Clear OTP
+        user.updateOTP = undefined;
+        user.updateOTPExpires = undefined;
+
+        await user.save();
+
+        await logActivity({
+            userId: user._id,
+            username: user.username,
+            action: "PASSWORD_CHANGE",
+            status: "SUCCESS",
+            details: "Password updated successfully using secure OTP flow.",
+            req: req
+        });
+
+        res.status(200).json({ success: true, message: "Password updated successfully" });
+    } catch (error) {
+        console.error("Secure Password Update Error:", error);
+        res.status(500).json({ success: false, message: "Server Error" });
     }
 }
