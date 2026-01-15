@@ -17,6 +17,8 @@
     "@react-oauth/google": "^0.13.4",
     "@tanstack/react-query": "^5.80.6",
     "axios": "^1.9.0",
+    "baseline-browser-mapping": "^2.9.14",
+    "caniuse-lite": "^1.0.30001764",
     "classnames": "^2.5.1",
     "cors": "^2.8.5",
     "file-saver": "^2.0.5",
