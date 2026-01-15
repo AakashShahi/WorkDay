@@ -4,6 +4,7 @@ import {
     MessageSquare,
     Briefcase,
     FileCheck,
+    ShieldAlert,
     Settings,
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
@@ -34,6 +35,7 @@ export default function Sidebar() {
                         <SidebarItem to="/admin/dashboard/reviews" icon={<MessageSquare size={18} />} label="Review Management" />
                         <SidebarItem to="/admin/dashboard/professions" icon={<Briefcase size={18} />} label="Profession Management" />
                         <SidebarItem to="/admin/dashboard/verifications" icon={<FileCheck size={18} />} label="Verification Requests" />
+                        <SidebarItem to="/admin/dashboard/logs" icon={<ShieldAlert size={18} />} label="Activity Logs" />
                         <SidebarItem to="/admin/dashboard/settings" icon={<Settings size={18} />} label="Settings" />
                     </ul>
                 </nav>
