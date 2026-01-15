@@ -31,6 +31,9 @@ router.post(
     userController.resetPassword
 )
 
+router.post("/request-update-otp", authenticateUser, userController.requestUpdateOTP)
+router.post("/secure-update-password", authenticateUser, userController.secureUpdatePassword)
+
 router.post("/google", userController.googleLogin)
 router.post("/facebook", userController.facebookLogin)
 

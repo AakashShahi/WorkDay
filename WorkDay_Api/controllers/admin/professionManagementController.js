@@ -1,4 +1,5 @@
 const Profession = require("../../models/ProfessionCategory");
+const { logActivity } = require("../../utils/auditLogger");
 
 // Create Profession
 exports.createProfession = async (req, res) => {
@@ -24,6 +25,15 @@ exports.createProfession = async (req, res) => {
         });
 
         await newProfession.save();
+
+        await logActivity({
+            userId: req.user._id,
+            username: req.user.username,
+            action: "ADMIN_ACTION",
+            status: "SUCCESS",
+            details: `Admin created profession category: ${name}`,
+            req: req
+        });
 
         return res.status(201).json({
             success: true,
@@ -109,6 +119,15 @@ exports.updateOneProfession = async (req, res) => {
             });
         }
 
+        await logActivity({
+            userId: req.user._id,
+            username: req.user.username,
+            action: "ADMIN_ACTION",
+            status: "SUCCESS",
+            details: `Admin updated profession category: ${name}`,
+            req: req
+        });
+
         return res.status(200).json({
             success: true,
             message: "Profession updated successfully",
@@ -136,6 +155,15 @@ exports.deleteOneProfession = async (req, res) => {
                 message: "Profession not found"
             });
         }
+
+        await logActivity({
+            userId: req.user._id,
+            username: req.user.username,
+            action: "ADMIN_ACTION",
+            status: "SUCCESS",
+            details: `Admin deleted profession category ID: ${_id}`,
+            req: req
+        });
 
         return res.status(200).json({
             success: true,

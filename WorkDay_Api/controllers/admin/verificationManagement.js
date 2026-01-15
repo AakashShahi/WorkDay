@@ -1,4 +1,5 @@
 const User = require("../../models/User"); // Adjust the path if needed
+const { logActivity } = require("../../utils/auditLogger");
 
 // Get all workers who have requested verification
 exports.getVerificationRequests = async (req, res) => {
@@ -57,6 +58,15 @@ exports.acceptVerification = async (req, res) => {
         worker.verificationRequest = false;
         await worker.save();
 
+        await logActivity({
+            userId: req.user._id,
+            username: req.user.username,
+            action: "ADMIN_ACTION",
+            status: "SUCCESS",
+            details: `Admin approved verification for worker: ${worker.username}`,
+            req: req
+        });
+
         res.status(200).json({ success: true, message: "Worker verified successfully" });
     } catch (error) {
         console.error("Error accepting verification:", error);
@@ -77,6 +87,15 @@ exports.rejectVerification = async (req, res) => {
         worker.verificationRequest = false;
         worker.isVerified = false;
         await worker.save();
+
+        await logActivity({
+            userId: req.user._id,
+            username: req.user.username,
+            action: "ADMIN_ACTION",
+            status: "SUCCESS",
+            details: `Admin rejected verification for worker: ${worker.username}`,
+            req: req
+        });
 
         res.status(200).json({ success: true, message: "Verification request rejected" });
     } catch (error) {

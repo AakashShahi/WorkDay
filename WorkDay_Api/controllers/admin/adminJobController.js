@@ -1,4 +1,5 @@
 const Job = require("../../models/Job");
+const { logActivity } = require("../../utils/auditLogger");
 
 // @desc   Get all jobs
 // @route  GET /api/jobs
@@ -33,6 +34,15 @@ exports.deleteJobById = async (req, res) => {
 
         await Job.findByIdAndDelete(id);
 
+        await logActivity({
+            userId: req.user._id,
+            username: req.user.username,
+            action: "ADMIN_ACTION",
+            status: "SUCCESS",
+            details: `Admin deleted job ID: ${id}`,
+            req: req
+        });
+
         res.status(200).json({ success: true, message: "Job deleted successfully" });
     } catch (error) {
         console.error("Error deleting job:", error);
@@ -45,6 +55,15 @@ exports.deleteJobById = async (req, res) => {
 exports.deleteAllJobs = async (req, res) => {
     try {
         await Job.deleteMany();
+
+        await logActivity({
+            userId: req.user._id,
+            username: req.user.username,
+            action: "ADMIN_ACTION",
+            status: "SUCCESS",
+            details: "Admin deleted ALL jobs.",
+            req: req
+        });
 
         res.status(200).json({ success: true, message: "All jobs deleted successfully" });
     } catch (error) {

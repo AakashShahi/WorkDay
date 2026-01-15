@@ -1,5 +1,6 @@
 const User = require("../../models/User")
 const bcrypt = require("bcrypt")
+const { logActivity } = require("../../utils/auditLogger");
 
 // Create User
 exports.createUsers = async (req, res) => {
@@ -40,6 +41,15 @@ exports.createUsers = async (req, res) => {
         });
 
         await newUser.save();
+
+        await logActivity({
+            userId: req.user._id,
+            username: req.user.username,
+            action: "ADMIN_ACTION",
+            status: "SUCCESS",
+            details: `Admin created new user: ${username} (${role})`,
+            req: req
+        });
 
         return res.status(201).json({
             success: true,
@@ -149,6 +159,15 @@ exports.updateOneUser = async (req, res) => {
             });
         }
 
+        await logActivity({
+            userId: req.user._id,
+            username: req.user.username,
+            action: "ADMIN_ACTION",
+            status: "SUCCESS",
+            details: `Admin updated user: ${user.username} (${user.role})`,
+            req: req
+        });
+
         return res.status(200).json({
             success: true,
             message: "User updated successfully",
@@ -176,6 +195,15 @@ exports.deleteOneUser = async (req, res) => {
                 message: "User not found"
             });
         }
+
+        await logActivity({
+            userId: req.user._id,
+            username: req.user.username,
+            action: "ADMIN_ACTION",
+            status: "SUCCESS",
+            details: `Admin deleted user ID: ${_id}`,
+            req: req
+        });
 
         return res.status(200).json({
             success: true,

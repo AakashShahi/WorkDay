@@ -3,6 +3,7 @@ const router = express.Router();
 const authenticateUser = require("../../middlewares/authorizedUser");
 const adminController = require("../../controllers/admin/adminController");
 const upload = require("../../middlewares/fileUpload")
+const { getAuditLogs } = require("../../controllers/admin/auditLogController");
 
 // Get admin profile
 router.get(
@@ -27,6 +28,14 @@ router.put(
     authenticateUser.authenticateUser,
     authenticateUser.isAdmin,
     adminController.changeAdminPassword
+);
+
+// Get audit logs
+router.get(
+    "/audit-logs",
+    authenticateUser.authenticateUser,
+    authenticateUser.isAdmin,
+    getAuditLogs
 );
 
 module.exports = router;
