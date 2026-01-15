@@ -17,6 +17,7 @@ const professionSchema = Yup.object().shape({
 
 export default function CreateProfessionModal({ isOpen, onClose }) {
     const { mutate, isPending } = useCreateProfession();
+    const [fileSizeMB, setFileSizeMB] = React.useState(null);
 
     if (!isOpen) return null;
 
@@ -87,13 +88,27 @@ export default function CreateProfessionModal({ isOpen, onClose }) {
 
                             {/* Icon Upload Field */}
                             <div>
-                                <label className="text-sm font-medium">Icon Image</label>
+                                <div className="flex justify-between items-center">
+                                    <label className="text-sm font-medium">Icon Image</label>
+                                    <span className="text-[10px] text-gray-400 font-bold">Max 5MB</span>
+                                </div>
                                 <input
                                     type="file"
                                     accept=".png,.jpg,.jpeg"
-                                    className="w-full"
-                                    onChange={(event) => setFieldValue("icon", event.currentTarget.files[0])}
+                                    className="w-full text-sm border p-1 rounded bg-gray-50 mt-1 cursor-pointer"
+                                    onChange={(event) => {
+                                        const file = event.currentTarget.files[0];
+                                        if (file) {
+                                            setFileSizeMB((file.size / (1024 * 1024)).toFixed(2));
+                                            setFieldValue("icon", file);
+                                        }
+                                    }}
                                 />
+                                {fileSizeMB && (
+                                    <p className={`text-[10px] mt-1 font-bold ${fileSizeMB > 5 ? "text-red-500" : "text-green-500"}`}>
+                                        File Size: {fileSizeMB} MB {fileSizeMB > 5 && "(Limit Exceeded)"}
+                                    </p>
+                                )}
                                 <ErrorMessage name="icon" component="p" className="text-red-500 text-xs mt-1" />
                             </div>
 

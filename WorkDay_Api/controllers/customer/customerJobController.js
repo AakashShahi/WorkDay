@@ -2,6 +2,7 @@ const Job = require("../../models/Job")
 const Review = require("../../models/Review")
 
 const ProfessionCategory = require("../../models/ProfessionCategory");
+const { logActivity } = require("../../utils/auditLogger");
 
 exports.postPublicJob = async (req, res) => {
     try {
@@ -40,6 +41,15 @@ exports.postPublicJob = async (req, res) => {
         });
 
         await job.save();
+        await logActivity({
+            userId: req.user._id,
+            username: req.user.username,
+            action: "ADMIN_ACTION", // Using ADMIN_ACTION or add a new one, but for now generic for user actions
+            status: "SUCCESS",
+            details: `Job posted in category: ${profession.name}`,
+            req: req
+        });
+
         res.status(201).json({
             success: true,
             data: job,
@@ -156,6 +166,15 @@ exports.submitReview = async (req, res) => {
         job.status = "done";
         job.review = newReview._id;
         await job.save();
+
+        await logActivity({
+            userId: req.user._id,
+            username: req.user.username,
+            action: "ADMIN_ACTION",
+            status: "SUCCESS",
+            details: `Review submitted for job ID: ${job._id} with rating ${rating}`,
+            req: req
+        });
 
         res.status(200).json({
             message: "Review submitted successfully",

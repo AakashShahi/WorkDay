@@ -37,6 +37,33 @@ export default function LoginForm() {
     const [otp, setOtp] = useState("");
     const recaptchaRef = useRef(null);
 
+    const [attemptsRemaining, setAttemptsRemaining] = useState(null);
+    const [lockoutTimer, setLockoutTimer] = useState(null);
+    const [remainingSeconds, setRemainingSeconds] = useState(0);
+
+    // Lockout Timer Effect
+    React.useEffect(() => {
+        let interval;
+        if (lockoutTimer) {
+            const calculateRemaining = () => {
+                const now = new Date();
+                const diff = Math.ceil((lockoutTimer - now) / 1000);
+                if (diff <= 0) {
+                    setLockoutTimer(null);
+                    setRemainingSeconds(0);
+                    setAttemptsRemaining(null);
+                    clearInterval(interval);
+                } else {
+                    setRemainingSeconds(diff);
+                }
+            };
+
+            calculateRemaining();
+            interval = setInterval(calculateRemaining, 1000);
+        }
+        return () => clearInterval(interval);
+    }, [lockoutTimer]);
+
     const passwordChecklist = (password) => [
         { label: "Minimum 8 characters", valid: password.length >= 8 },
         { label: "At least 1 uppercase letter", valid: /[A-Z]/.test(password) },
@@ -99,12 +126,26 @@ export default function LoginForm() {
                         toast.info("Two-Factor Authentication Required");
                     } else {
                         // Success Login
+                        setAttemptsRemaining(null);
+                        setLockoutTimer(null);
                         handleLoginSuccess(res.data);
                     }
                 }
             } catch (error) {
                 setIsPending(false);
-                toast.error(error.response?.data?.message || "Login failed");
+                const data = error.response?.data;
+
+                if (error.response?.status === 403 && data?.isLocked) {
+                    const lockUntil = new Date(data.lockUntil);
+                    setLockoutTimer(lockUntil);
+                    toast.error(data.message || "Account is locked.");
+                } else if (data?.attemptsRemaining !== undefined) {
+                    setAttemptsRemaining(data.attemptsRemaining);
+                    toast.error(`${data.message}. ${data.attemptsRemaining} attempts left.`);
+                } else {
+                    toast.error(data?.message || "Login failed");
+                }
+
                 if (recaptchaRef.current) recaptchaRef.current.reset();
                 setCaptchaToken(null);
             }
@@ -222,6 +263,18 @@ export default function LoginForm() {
                                         <img src={logo} alt="Workday Logo" className="h-10 mx-auto mb-2" />
                                         <h2 className="text-xl md:text-2xl font-bold text-gray-800">Sign in to your Account</h2>
                                         <p className="text-sm text-gray-500">Welcome back!</p>
+
+                                        {attemptsRemaining !== null && attemptsRemaining > 0 && attemptsRemaining < 5 && (
+                                            <p className="text-xs text-orange-600 mt-2 font-semibold">
+                                                {attemptsRemaining} attempts remaining before lockout.
+                                            </p>
+                                        )}
+
+                                        {lockoutTimer && remainingSeconds > 0 && (
+                                            <p className="text-xs text-red-600 mt-2 font-bold animate-pulse">
+                                                Account locked. Please wait {Math.floor(remainingSeconds / 60)}m {remainingSeconds % 60}s.
+                                            </p>
+                                        )}
                                     </div>
 
                                     <form onSubmit={formik.handleSubmit} className="space-y-5">

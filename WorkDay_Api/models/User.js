@@ -69,6 +69,24 @@ const UserSchema = new mongoose.Schema(
         isTwoFactorEnabled: {
             type: Boolean,
             default: false,
+        },
+        loginAttempts: {
+            type: Number,
+            required: true,
+            default: 0,
+        },
+        lockUntil: {
+            type: Date,
+        },
+        passwordHistory: {
+            type: [String],
+            default: [],
+        },
+        updateOTP: {
+            type: String,
+        },
+        updateOTPExpires: {
+            type: Date,
         }
     },
     {

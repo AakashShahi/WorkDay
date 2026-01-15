@@ -1,18 +1,27 @@
 require("dotenv").config();
-const http = require("http");
+const https = require("https");
+const fs = require("fs");
+const path = require("path");
 const { Server } = require("socket.io");
 const app = require("./index");
 
 const startJobExpiryCron = require("./controllers/job/jobStatusSchedule");
 const startWorkerAvailabilityCron = require("./controllers/job/startWorkerAvailabiliyCron");
 
-// 1. Create HTTP server from Express app
-const server = http.createServer(app);
+// Path to certificates (root of the whole project)
+const certsDir = path.join(__dirname, "..", "certs");
+const options = {
+    key: fs.readFileSync(path.join(certsDir, "server.key")),
+    cert: fs.readFileSync(path.join(certsDir, "server.crt")),
+};
+
+// 1. Create HTTPS server from Express app
+const server = https.createServer(options, app);
 
 // 2. Initialize Socket.IO instance
 const io = new Server(server, {
     cors: {
-        origin: "http://localhost:5173", // <--- CHANGE THIS: Specify the exact origin of your React app
+        origin: "https://localhost:5173", // <--- Updated to https
         methods: ["GET", "POST"],
         credentials: true // <--- IMPORTANT: Add this to explicitly allow credentials
     },
@@ -50,5 +59,5 @@ startWorkerAvailabilityCron();
 // 6. Start server
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, "0.0.0.0", () => {
-    console.log(`🚀 Server running on http://localhost:${PORT}`);
+    console.log(`🚀 Server running on https://localhost:${PORT}`);
 });

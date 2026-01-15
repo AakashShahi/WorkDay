@@ -1,4 +1,5 @@
 const Review = require("../../models/Review");
+const { logActivity } = require("../../utils/auditLogger");
 
 exports.getCustomerReviews = async (req, res) => {
     try {
@@ -44,6 +45,15 @@ exports.deleteCustomerReview = async (req, res) => {
 
         review.deletedByCustomer = true;
         await review.save();
+
+        await logActivity({
+            userId: req.user._id,
+            username: req.user.username,
+            action: "ADMIN_ACTION",
+            status: "SUCCESS",
+            details: `Customer deleted review ID: ${review._id}`,
+            req: req
+        });
 
         res.status(200).json({
             success: true,
