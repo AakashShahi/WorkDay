@@ -159,7 +159,7 @@ export default function WorkerProfileModals({
                                         )}
                                         <input
                                             type="file"
-                                            accept="image/*"
+                                            accept=".png,.jpg,.jpeg"
                                             onChange={(e) => handleProfilePicChange(e, setFieldValue)}
                                             className="mt-2"
                                         />
@@ -253,7 +253,7 @@ export default function WorkerProfileModals({
                                         )}
                                         <input
                                             type="file"
-                                            accept="image/*"
+                                            accept=".png,.jpg,.jpeg"
                                             onChange={(e) => handleCertificateChange(e, setFieldValue)}
                                             className="mt-2"
                                         />
