@@ -18,6 +18,7 @@ import WorkerJobsPage from '../pages/workers_page/WorkerJobsPage';
 import WorkerProfilePage from '../pages/workers_page/WorkerProfilePage';
 import WorkerReviewPage from '../pages/workers_page/WorkerReviewPage';
 import AdminJobManagement from '../components/admin/AdminJobManagement';
+import AdminAuditLogs from '../components/admin/AdminAuditLogs';
 import RequestResetPasswordPage from '../pages/RequestPassword';
 import ResetPasswordPage from '../pages/ResetPage';
 import NotFoundPage from '../pages/NotFoundPage';
@@ -60,7 +61,7 @@ export default function AppRouter() {
               <Route path="reviews" element={<AdminReviewManagement />} />
               <Route path="professions" element={<AdminProfessionManagement />} />
               <Route path="verifications" element={<AdminVerificationsManagement />} />
-
+              <Route path="logs" element={<AdminAuditLogs />} />
               <Route path="settings" element={<AdminSetting />} />
               <Route path="*" element={<NotFoundPage />} />
             </Route>
