@@ -90,7 +90,7 @@ export default function CreateProfessionModal({ isOpen, onClose }) {
                                 <label className="text-sm font-medium">Icon Image</label>
                                 <input
                                     type="file"
-                                    accept="image/*"
+                                    accept=".png,.jpg,.jpeg"
                                     className="w-full"
                                     onChange={(event) => setFieldValue("icon", event.currentTarget.files[0])}
                                 />

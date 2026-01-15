@@ -61,7 +61,7 @@ export default function UpdateProfessionModal({ isOpen, onClose, profession }) {
                         <label className="text-sm font-medium">Icon</label>
                         <input
                             type="file"
-                            accept="image/*"
+                            accept=".png,.jpg,.jpeg"
                             onChange={(e) => setIconFile(e.target.files[0])}
                             className="w-full"
                         />

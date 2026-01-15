@@ -107,7 +107,7 @@ export default function AdminSetting() {
                     <label className="block text-sm font-medium">Change Profile Picture</label>
                     <input
                         type="file"
-                        accept="image/*"
+                        accept=".png,.jpg,.jpeg"
                         onChange={(e) =>
                             profileFormik.setFieldValue("profile_pic", e.currentTarget.files[0])
                         }
