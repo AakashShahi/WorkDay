@@ -73,19 +73,26 @@ Protects user privacy and prevents hackers from building a list of valid account
 
 ---
 
-## 5. Brute-Force & Rate Limiting
+## 5. Brute-Force Protection & Account Lockout
 
-Disrupts automated attempts to guess passwords.
+Disrupts automated attempts to guess passwords through both network-level and account-level restrictions.
 
 *   **How it is applied:** 
-    Enforces a strict limit on the number of requests an IP address can make to auth routes within a specific time window.
+    1.  **IP Rate Limiting:** Enforces a limit on the number of requests an IP address can make to auth routes (10 requests per 15 mins).
+    2.  **Account Lockout:** Tracks failed login attempts per user. After **5 failed attempts**, the account is locked for **10 minutes**.
 *   **Where it is applied:**
-    *   **Backend:** [index.js](file:///e:/shahi/Documents/Developer/Cw2/WorkDay/WorkDay_Api/index.js) (Rate limiting middleware applied to `/api/auth`).
+    *   **Backend Middleware:** [index.js](file:///e:/shahi/Documents/Developer/Cw2/WorkDay/WorkDay_Api/index.js) (IP limiting).
+    *   **Backend Logic:** [userController.js](file:///e:/shahi/Documents/Developer/Cw2/WorkDay/WorkDay_Api/controllers/userController.js) (Login attempts tracking and `lockUntil` enforcement).
+    *   **Frontend:** [LoginForm.jsx](file:///e:/shahi/Documents/Developer/Cw2/WorkDay/WorkDay_Web/Workday/src/components/auth/LoginForm.jsx) (Displays remaining attempts and lockout timer).
 *   **Why it is applied:** 
-    To prevent "Credential Stuffing" and automated dictionary attacks.
+    To prevent targeted "Credential Guessing" and distributed "Credential Stuffing" attacks.
 *   **Testing:**
-    *   **General:** Rapidly refresh or submit the login form multiple times.
-    *   **Burp Suite (Intruder):** Send a login request to Intruder. Set a payload for the password and run it 15+ times. Observe that after 10 requests, the status changes to `429 Too Many Requests`.
+    *   **IP Limit:** Send 11+ requests to `/api/auth` from one IP. Observe `429 Too Many Requests`.
+    *   **Account Lockout & Countdown:**
+        1. Attempt to log in with an incorrect password 5 times.
+        2. Observe the **live countdown timer** on the frontend (e.g., "Please wait 9m 45s").
+        3. Attempt a 6th login while locked; ensure the server returns `403 Forbidden` with the `lockUntil` timestamp.
+        4. Wait for the timer to reach zero. Ensure the UI refreshes and allows new attempts (auto-reset logic).
 
 ---
 
@@ -109,6 +116,8 @@ Protects the server from malicious file uploads and directory traversal attacks.
 
 *   **How it is applied:**
     *   **Strict File Type Whitelisting:** Both frontend and backend only allow `.png`, `.jpg`, and `.jpeg` extensions. The backend also verifies the MIME type.
+    *   **File Size Restriction:** A hard limit of **5MB** is enforced per file upload to prevent Disk Exhaustion attacks (DoS).
+    *   **Frontend Validation:** All upload fields display the allowed maximum size (5MB) and the actual size of the selected file, providing immediate feedback before submission.
     *   **Filename Sanitization:** Files are renamed using `uuidv4` to prevent attackers from controlling the filename and conducting path traversal or overwriting critical files.
     *   **Path Canonicalization:** A custom utility [pathValidator.js](file:///e:/shahi/Documents/Developer/Cw2/WorkDay/WorkDay_Api/utils/pathValidator.js) is used to ensure resolved paths stay within the `uploads/` directory.
 *   **Where it is applied:**
@@ -123,3 +132,121 @@ Protects the server from malicious file uploads and directory traversal attacks.
     *   **Burp Suite (Bypassing UI):** Intercept an upload request. Change the filename in the multipart body to `../../etc/passwd` or `shell.php`. 
     *   **Verification:** Ensure the server returns a `500` or `400` error (e.g., `"Invalid file extension"` or `"Only .png, .jpg and .jpeg format allowed!"`) and no file is created outside the `uploads/` directory.
 
+---
+
+## 8. Local Development HTTPS
+For local development, we use HTTPS with self-signed certificates. This ensures that features like OAuth (Google/Facebook) work correctly as they often require secure origins.
+- **Backend**: `https://localhost:5050`
+- **Frontend**: `https://localhost:5173`
+
+*   **How it is applied:**
+    *   **Self-Signed Certificates:** A local Root CA and a Server Certificate (signed by the Root CA) are generated using OpenSSL.
+    *   **Backend:** Node.js uses `https.createServer()` with the generated `server.key` and `server.crt`.
+    *   **Frontend:** Vite is configured via `server.https` to serve the application over HTTPS.
+*   **Where it is applied:**
+    *   **Certificates:** Stored in the `/certs` directory at the project root.
+    *   **Backend:** [server.js](file:///e:/shahi/Documents/Developer/Cw2/WorkDay/WorkDay_Api/server.js).
+    *   **Frontend:** [vite.config.js](file:///e:/shahi/Documents/Developer/Cw2/WorkDay/WorkDay_Web/Workday/vite.config.js).
+*   **Why it is applied:**
+    *   To prevent "Mixed Content" warnings when the frontend (HTTPS) tries to communicate with a backend (HTTP).
+    *   To simulate a production-like environment where SSL/TLS is mandatory.
+*   **Testing:**
+    *   **General:** Start the backend and frontend. Access `https://localhost:5173` in the browser. 
+    *   **Verification:** 
+        1. Check the browser address bar for `https://`.
+        2. If the root certificate is not trusted, the browser will show a warning (which is expected for self-signed certs).
+        3. To remove the warning, the `root.crt` must be manually added to the system's "Trusted Root Certification Authorities" store.
+    *   **Burp Suite:** Capture traffic between the frontend and backend. Ensure the endpoints now start with `https://`.
+
+---
+
+## 9. Password History Policy
+
+Ensures users do not reuse vulnerable or recently changed passwords.
+
+*   **How it is applied:**
+    The system maintains a `passwordHistory` array in the [User.js](file:///e:/shahi/Documents/Developer/Cw2/WorkDay/WorkDay_Api/models/User.js) model. Before a password update, the new password is hashed and compared against the current hash and the last 1 entry in the `passwordHistory` array (covering the last 2 unique passwords).
+*   **Where it is applied:**
+    *   **Backend:** [User.js](file:///e:/shahi/Documents/Developer/Cw2/WorkDay/WorkDay_Api/models/User.js) and role-controllers (e.g., [workerController.js](file:///e:/shahi/Documents/Developer/Cw2/WorkDay/WorkDay_Api/controllers/worker/workerController.js), [adminController.js](file:///e:/shahi/Documents/Developer/Cw2/WorkDay/WorkDay_Api/controllers/admin/adminController.js)).
+*   **Why it is applied:**
+    Prevents "Password Cycling" and ensures users choose fresh passwords, reducing the risk if an old password hash was ever leaked.
+*   **Testing:**
+    *   **General:** Change your password. Then immediately try to change it back to the previous one.
+    *   **Verification:** Ensure the system returns an error: `"New password cannot be one of your last 2 passwords"`.
+
+---
+
+## 10. OTP-Verified Sensitive Updates (MFA for Account Changes)
+
+Adds a mandatory verification step for high-risk account modifications.
+
+*   **How it is applied:**
+    Critical modifications (Profile Name, Profile Picture, Password Change) require a 6-digit One-Time Password (OTP). The backend generates this code, stores it with a 10-minute expiration, and sends it to the user's verified email. The update only commits if the user provides the correct, unexpired code.
+*   **Where it is applied:**
+    *   **Backend:** [userController.js](file:///e:/shahi/Documents/Developer/Cw2/WorkDay/WorkDay_Api/controllers/userController.js) (`requestUpdateOTP` and authentication checks).
+    *   **Frontend:** [WorkerProfileModals.jsx](file:///e:/shahi/Documents/Developer/Cw2/WorkDay/WorkDay_Web/Workday/src/components/worker/modals/WorkerProfileModals.jsx) and [AdminSetting.jsx](file:///e:/shahi/Documents/Developer/Cw2/WorkDay/WorkDay_Web/Workday/src/components/admin/AdminSetting.jsx).
+*   **Why it is applied:**
+    Prevents "Account Takeover" via CSRF or session hijacking. Even if an attacker gains session access, they cannot modify the account without also controlling the user's email.
+*   **Testing:**
+    *   **General:** Open the Profile settings. Change your name and click "Save" before requesting the code. The button should either be blocked or return an error. Click "Send Code", retrieve it from email, and submit.
+    *   **Burp Suite (Bypassing UI):** Captured a profile update request. Change the `otp` field to an incorrect value. Ensure the server returns generic `"Invalid or expired OTP"` error.
+
+---
+
+## 11. System Activity Logs (Audit Trail)
+
+To maintain accountability and detect suspicious behavior, the system implements a comprehensive audit logging mechanism.
+
+*   **How it is applied:**
+    - A dedicated `AuditLog` model captures `user`, `action`, `status`, `details`, `ipAddress`, and `userAgent`.
+    - A centralized `auditLogger` utility is used across controllers to record events.
+    - Admins have access to a live dashboard with filtering by action, status, and date.
+*   **Where it is applied:**
+    - **Models:** [AuditLog.js](file:///e:/shahi/Documents/Developer/Cw2/WorkDay/WorkDay_Api/models/AuditLog.js)
+    - **Utility:** [auditLogger.js](file:///e:/shahi/Documents/Developer/Cw2/WorkDay/WorkDay_Api/utils/auditLogger.js)
+    - **Controllers:** [userController.js](file:///e:/shahi/Documents/Developer/Cw2/WorkDay/WorkDay_Api/controllers/userController.js), [workerController.js](file:///e:/shahi/Documents/Developer/Cw2/WorkDay/WorkDay_Api/controllers/worker/workerController.js), [adminController.js](file:///e:/shahi/Documents/Developer/Cw2/WorkDay/WorkDay_Api/controllers/admin/adminController.js).
+    - **Admin Dashboard:** [AdminAuditLogs.jsx](file:///e:/shahi/Documents/Developer/Cw2/WorkDay/WorkDay_Web/Workday/src/components/admin/AdminAuditLogs.jsx) (`/admin/dashboard/logs`).
+*   **Why it is applied:**
+    - **Accountability:** Tracks who did what and when.
+    - **Incident Response:** Helps reconstruct events during a security breach.
+    - **Anomaly Detection:** Identifies patterns like repeat login failures or rapid profile changes.
+    - **Compliance:** Facilitates auditing requirements.
+*   **Testing:**
+    1. Perform a login, logout, and profile update.
+    2. Try failing a login 3 times.
+    3. Log in as an Admin and navigate to **Activity Logs**.
+    4. Verify that all actions (Successes and Failures) are recorded with correct timestamps and IP addresses.
+    5. Use the filters to search for "LOGIN_FAILURE" and ensure the correct logs appear.
+
+### Section 12: Secure Build Process
+To minimize the attack surface and protect the application's logic, a secure build pipeline is implemented for production deployments.
+
+*   **How it is applied:**
+    - **Minification & Tree-shaking:** Vite's build process automatically removes unused code and minifies the output using `esbuild` to reduce the bundle size and obscure code structure.
+    - **Code Obfuscation:** The `vite-plugin-javascript-obfuscator` is integrated into the production build to scramble JavaScript code, making reverse engineering significantly more difficult.
+    - **Secure Environment Injection:** Sensitive keys are managed via environment variables and are NOT included in the client-side bundle unless explicitly prefixed with `VITE_`.
+    - **No Sourcemaps:** Sourcemaps are disabled in production to prevent exposing the original source code structure.
+*   **Where it is applied:**
+    - **Build Config:** [vite.config.js](file:///e:/shahi/Documents/Developer/Cw2/WorkDay/WorkDay_Web/Workday/vite.config.js)
+    - **Environment:** `.env` and `.env.local` files.
+*   **Why it is applied:**
+    - **Attack Surface Reduction:** Minimizing the amount of shipped code reduces potential entry points for attackers.
+    - **IP Protection:** Obfuscation protects proprietary logic and prevents easy cloning or analysis of the application.
+    - **Information Disclosure Prevention:** Disabling sourcemaps and filtering environment variables ensures internal paths and keys remain hidden.
+*   **Testing:**
+    1.  **Build Check:**
+        - Run `npm run build` in the `WorkDay_Web/Workday` directory.
+        - Inspect the generated files in the `dist` directory.
+        - Verify that JavaScript files are minified and that variables/functions are renamed to non-obvious strings.
+    2.  **Browser Verification (DevTools):**
+        - Deploy or preview the build (`npm run preview`).
+        - Open **Browser DevTools** (F12 or Ctrl+Shift+I).
+        - Navigate to the **Sources** tab.
+        - Locate the main logic files (usually under `assets/`).
+        - **What to expect:**
+            - **Code Scrambling:** The code should look like a dense, unreadable block of text with arbitrary names (e.g., `_0x1a2b`, `const a = ...`).
+            - **No Readable Logic:** Business logic, API endpoints, and internal function names should be unrecognizable.
+            - **Missing Sourcemaps:** You should see a notification like "Source Map detected but failed to load" (if disabled) or simply no link to the original `.jsx` files.
+            - **String Concealment:** Hardcoded strings should be hex-encoded or obscured.
+    3.  **Leakage Check:** 
+        - Search the build output (in `dist` or via DevTools search) for sensitive strings (e.g., API secrets, internal server paths) to ensure no leakages occurred.
