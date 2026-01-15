@@ -101,4 +101,25 @@ Ensures security standards cannot be bypassed by skipping the frontend.
     To ensure all passwords meet the security policy (8+ chars, Uppercase, Number, Special Char) even if a user bypasses the UI using tools like Postman.
 *   **Testing:**
     *   **General:** Try to register via the website with a simple password (the UI should block it).
-    *   **Burp Suite (Repeater):** Capture a registration request and change the password to `12345`. The server MUST return a `400` error with the complexity requirement message.
+---
+
+## 7. File Upload Security & Path Traversal
+
+Protects the server from malicious file uploads and directory traversal attacks.
+
+*   **How it is applied:**
+    *   **Strict File Type Whitelisting:** Both frontend and backend only allow `.png`, `.jpg`, and `.jpeg` extensions. The backend also verifies the MIME type.
+    *   **Filename Sanitization:** Files are renamed using `uuidv4` to prevent attackers from controlling the filename and conducting path traversal or overwriting critical files.
+    *   **Path Canonicalization:** A custom utility [pathValidator.js](file:///e:/shahi/Documents/Developer/Cw2/WorkDay/WorkDay_Api/utils/pathValidator.js) is used to ensure resolved paths stay within the `uploads/` directory.
+*   **Where it is applied:**
+    *   **Frontend:** [WorkerProfileModals.jsx](file:///e:/shahi/Documents/Developer/Cw2/WorkDay/WorkDay_Web/Workday/src/components/worker/modals/WorkerProfileModals.jsx), [AdminSetting.jsx](file:///e:/shahi/Documents/Developer/Cw2/WorkDay/WorkDay_Web/Workday/src/components/admin/AdminSetting.jsx), and Profession modals.
+    *   **Backend Middleware:** [fileUpload.js](file:///e:/shahi/Documents/Developer/Cw2/WorkDay/WorkDay_Api/middlewares/fileUpload.js).
+    *   **Backend Utility:** [pathValidator.js](file:///e:/shahi/Documents/Developer/Cw2/WorkDay/WorkDay_Api/utils/pathValidator.js).
+*   **Why it is applied:**
+    *   Prevents Remote Code Execution (RCE) by blocking executable scripts (like `.php`, `.js`).
+    *   Mitigates Path Traversal attacks where an attacker tries to write or read files outside the intended directory using `../` sequences.
+*   **Testing:**
+    *   **General:** Attempt to upload a `.pdf` or `.txt` file via the profile settings. The browser should either filter these out or the server should return an error.
+    *   **Burp Suite (Bypassing UI):** Intercept an upload request. Change the filename in the multipart body to `../../etc/passwd` or `shell.php`. 
+    *   **Verification:** Ensure the server returns a `500` or `400` error (e.g., `"Invalid file extension"` or `"Only .png, .jpg and .jpeg format allowed!"`) and no file is created outside the `uploads/` directory.
+
