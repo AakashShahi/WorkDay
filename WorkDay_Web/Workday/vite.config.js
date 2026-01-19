@@ -29,3 +29,5 @@ export default defineConfig({
     },
   },
 })
+
+// Vite configuration file
