@@ -28,3 +28,5 @@ const logActivity = async ({ userId, username, action, status, details, req }) =
 };
 
 module.exports = { logActivity };
+
+// Audit logging utility
