@@ -47,3 +47,5 @@ instance.interceptors.response.use(
 );
 
 export default instance;
+
+// Base API configuration
