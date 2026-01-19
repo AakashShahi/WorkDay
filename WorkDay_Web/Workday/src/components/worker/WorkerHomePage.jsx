@@ -413,3 +413,5 @@ export default function WorkerHomePage() {
         </main>
     );
 }
+
+// Worker home page component
