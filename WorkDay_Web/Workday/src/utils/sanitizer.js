@@ -19,3 +19,5 @@ export const sanitizeHtml = (dirty) => {
 export const sanitizeText = (text) => {
     return DOMPurify.sanitize(text);
 };
+
+// Input sanitization utility
