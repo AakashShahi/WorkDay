@@ -11,3 +11,5 @@ export const resetPasswordApi = (data, token) =>
     axios.post("/auth/reset-password/" + token, data)
 
 export const requestUpdateOTPApi = () => axios.post("/auth/request-update-otp")
+
+// Authentication API endpoints
