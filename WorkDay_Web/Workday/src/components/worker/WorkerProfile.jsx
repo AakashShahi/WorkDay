@@ -335,3 +335,5 @@ export default function WorkerProfile() {
         </div>
     );
 }
+
+// Worker profile view component
