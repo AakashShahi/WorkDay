@@ -17,3 +17,5 @@ const isPathSafe = (baseDir, userInput) => {
 };
 
 module.exports = { isPathSafe };
+
+// Path validation utility
