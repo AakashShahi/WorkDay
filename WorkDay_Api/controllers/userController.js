@@ -280,8 +280,7 @@ exports.loginUser = async (req, res) => {
             "_id": getUser._id,
             "email": getUser.email,
             "username": getUser.username,
-            "name": getUser.name,
-            "role": getUser.role
+            "name": getUser.name
         }
 
         const token = jwt.sign(payload, process.env.SECRET, { expiresIn: "7d" })
@@ -479,8 +478,7 @@ exports.verify2FALogin = async (req, res) => {
                 "_id": user._id,
                 "email": user.email,
                 "username": user.username,
-                "name": user.name,
-                "role": user.role
+                "name": user.name
             }
             const token = jwt.sign(payload, process.env.SECRET, { expiresIn: "7d" });
 
@@ -542,8 +540,7 @@ exports.googleLogin = async (req, res) => {
             "_id": user._id,
             "email": user.email,
             "username": user.username,
-            "name": user.name,
-            "role": user.role
+            "name": user.name
         };
 
         const token = jwt.sign(payload, process.env.SECRET, { expiresIn: "7d" });
@@ -613,8 +610,7 @@ exports.facebookLogin = async (req, res) => {
             "_id": user._id,
             "email": user.email,
             "username": user.username,
-            "name": user.name,
-            "role": user.role
+            "name": user.name
         };
 
         const token = jwt.sign(payload, process.env.SECRET, { expiresIn: "7d" });

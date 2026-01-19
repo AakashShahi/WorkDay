@@ -24,12 +24,48 @@ const customerNotificationRoute = require("./routes/customer/customerNotificatio
 
 const path = require("path")
 const rateLimit = require("express-rate-limit");
+const helmet = require("helmet");
+const inputSanitizer = require("./middlewares/inputSanitizer");
 
 //Cors Setup
 const cors = require("cors")
 const app = express();
+
+// Security Middleware: Helmet
+app.use(
+    helmet({
+        crossOriginEmbedderPolicy: false, // Allow external resources like Google Fonts/Images
+        crossOriginResourcePolicy: { policy: "cross-origin" }, // Allow frontend to fetch images
+    })
+);
+
+app.use(
+    helmet.contentSecurityPolicy({
+        useDefaults: true,
+        directives: {
+            defaultSrc: ["'self'"],
+            scriptSrc: ["'self'", process.env.CLIENT_URL],
+            styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+            imgSrc: ["'self'", "data:", "blob:", "https://*.googleusercontent.com", "https://*.facebook.com", "https://platform-lookaside.fbsbx.com"], // Allow social login profile pics
+            fontSrc: ["'self'", "https://fonts.gstatic.com"],
+            connectSrc: ["'self'", process.env.CLIENT_URL, "https://www.googleapis.com", "https://graph.facebook.com"], // Allow OAuth calls
+            frameSrc: ["'self'", "https://www.google.com"], // Allow reCAPTCHA
+            objectSrc: ["'none'"],
+            upgradeInsecureRequests: [],
+        },
+    })
+);
+
+// Extra Security Headers
+app.use(helmet.referrerPolicy({ policy: "no-referrer" }));
+app.use(helmet.frameguard({ action: "deny" })); // Prevent Clickjacking
+
+// Cors Setup
 let corsOptions = {
-    origin: "*"
+    origin: process.env.CLIENT_URL || "https://localhost:5173", // Strict Whitelist
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"]
 }
 app.use(cors(corsOptions))
 
@@ -39,8 +75,35 @@ connectDB()
 //Accept Json in request
 app.use(express.json())
 
+// Global Input Sanitization (XSS Protection)
+app.use(inputSanitizer);
 
-app.use("/uploads", express.static(path.join(__dirname, "uploads")))
+
+// Secure Asset Serving (Hides Directory Structure)
+app.get("/api/media/:filename", (req, res) => {
+    const filename = req.params.filename;
+    const filePath = path.join(__dirname, "uploads", filename);
+
+    // Prevent Path Traversal
+    if (filename.includes("..") || filename.includes("/") || filename.includes("\\")) {
+        // Generic Error for Security
+        return res.status(400).json({ success: false, message: "Bad Request" });
+    }
+
+    res.sendFile(filePath, (err) => {
+        if (err) {
+            console.error("File download error:", err);
+            // Generic Error for Security (Don't reveal if file exists or not)
+            res.status(400).json({ success: false, message: "Bad Request" });
+        }
+    });
+});
+
+// BLOCK direct access to /uploads/ and return 400 Bad Request
+app.use("/uploads", (req, res) => {
+    res.status(400).json({ success: false, message: "Bad Request" });
+});
+// app.use("/uploads", express.static(path.join(__dirname, "uploads"))) // DISABLED: Direct static access
 
 // Rate Limiter for Auth Routes
 // Rate Limiter for Auth Routes: Protects against brute-force and credential stuffing

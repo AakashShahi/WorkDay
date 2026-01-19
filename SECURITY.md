@@ -148,8 +148,8 @@ For local development, we use HTTPS with self-signed certificates. This ensures 
     *   **Backend:** [server.js](file:///e:/shahi/Documents/Developer/Cw2/WorkDay/WorkDay_Api/server.js).
     *   **Frontend:** [vite.config.js](file:///e:/shahi/Documents/Developer/Cw2/WorkDay/WorkDay_Web/Workday/vite.config.js).
 *   **Why it is applied:**
-    *   To prevent "Mixed Content" warnings when the frontend (HTTPS) tries to communicate with a backend (HTTP).
-    *   To simulate a production-like environment where SSL/TLS is mandatory.
+    *   **Secure Cookies:** Allows setting `SameSite: None; Secure` cookies required for cross-site auth flows.
+    *   **Production Parity:** Mimics production environment constraints.
 *   **Testing:**
     *   **General:** Start the backend and frontend. Access `https://localhost:5173` in the browser. 
     *   **Verification:** 
@@ -218,7 +218,9 @@ To maintain accountability and detect suspicious behavior, the system implements
     4. Verify that all actions (Successes and Failures) are recorded with correct timestamps and IP addresses.
     5. Use the filters to search for "LOGIN_FAILURE" and ensure the correct logs appear.
 
-### Section 12: Secure Build Process
+---
+
+## 12. Secure Build Process
 To minimize the attack surface and protect the application's logic, a secure build pipeline is implemented for production deployments.
 
 *   **How it is applied:**
@@ -240,13 +242,133 @@ To minimize the attack surface and protect the application's logic, a secure bui
         - Verify that JavaScript files are minified and that variables/functions are renamed to non-obvious strings.
     2.  **Browser Verification (DevTools):**
         - Deploy or preview the build (`npm run preview`).
-        - Open **Browser DevTools** (F12 or Ctrl+Shift+I).
+        - Open **Browser DevTools**.
         - Navigate to the **Sources** tab.
-        - Locate the main logic files (usually under `assets/`).
         - **What to expect:**
-            - **Code Scrambling:** The code should look like a dense, unreadable block of text with arbitrary names (e.g., `_0x1a2b`, `const a = ...`).
+            - **Code Scrambling:** The code should look like a dense, unreadable block of text with arbitrary names.
             - **No Readable Logic:** Business logic, API endpoints, and internal function names should be unrecognizable.
-            - **Missing Sourcemaps:** You should see a notification like "Source Map detected but failed to load" (if disabled) or simply no link to the original `.jsx` files.
-            - **String Concealment:** Hardcoded strings should be hex-encoded or obscured.
+            - **Missing Sourcemaps:** No original `.jsx` files should be visible.
     3.  **Leakage Check:** 
-        - Search the build output (in `dist` or via DevTools search) for sensitive strings (e.g., API secrets, internal server paths) to ensure no leakages occurred.
+        - Search the build output for sensitive strings (e.g., API secrets) to ensure no leakages occurred.
+
+---
+
+## 13. Content Security Policy (CSP) & HTTP Headers
+
+Protects against Cross-Site Scripting (XSS), Clickjacking, and other injection attacks by strictly controlling which resources the browser is allowed to load.
+
+*   **How it is applied:**
+    We use the `helmet` middleware in Express to set various HTTP security headers.
+    -   **Content-Security-Policy (CSP):** Whitlists trusted sources for scripts, styles, images, and fonts.
+        -   `default-src 'self'`: Only allow resources from our own origin by default.
+        -   `script-src`: Allows `'self'` and `process.env.CLIENT_URL`.
+        -   `style-src`: Allows `'self'`, Google Fonts, and inline styles (configured cautiously).
+        -   `img-src`: Allows `'self'`, data URIs, blobs, and profile pictures from Google/Facebook.
+        -   `frame-src`: Allows Google (for reCAPTCHA).
+        -   `object-src 'none'`: Blocks Flash and other plugins.
+    -   **X-Frame-Options / Frameguard:** Set to `DENY` to prevent the site from being embedded in iframes (Anti-Clickjacking).
+    -   **Referrer-Policy:** Set to `no-referrer` to avoid leaking user browsing paths to third-party sites.
+    -   **X-Content-Type-Options:** `nosniff` (Default Helmet) to prevent MIME-sniffing attacks.
+    -   **HSTS:** Enforced for HTTPS connections.
+
+*   **Where it is applied:**
+    -   **Backend:** [index.js](file:///e:/shahi/Documents/Developer/Cw2/WorkDay/WorkDay_Api/index.js) (Helmet configuration).
+
+*   **Why it is applied:**
+    -   **XSS Mitigation:** Even if an attacker injects a script tag, the browser will refuse to execute it because it violates the CSP `script-src` directive.
+    -   **Clickjacking Prevention:** Ensuring the site cannot be framed prevents attackers from tricking users into clicking invisible buttons (e.g., "Delete Account") overlaid on top of innocent-looking pages.
+    -   **Privacy:** limiting referrer information protects user data.
+
+*   **Testing:**
+    -   **Manual:** Open DevTools > Network tab. Select the main document request. Verify the response headers include `Content-Security-Policy`, `X-Frame-Options: DENY`, etc.
+    -   **Burp Suite:**
+        1.  Intercept a response.
+        2.  Check for the presence of strict security headers.
+        3.  **PoC:** Try to load an image from an unapproved external site (e.g., `http://evil.com/image.png`) using `<img src="...">` in a vulnerable field. The browser console should show a CSP violation error: `Refused to load the image ... because it violates the following Content Security Policy directive`.
+
+---
+
+## 14. CORS Whitelisting (Cross-Origin Resource Sharing)
+
+Prevents unauthorized websites from making API requests to our backend on behalf of a logged-in user.
+
+*   **How it is applied:**
+    -   We configured the `cors` middleware (Express) and `socket.io` CORS settings to accept requests **only** from trusted origins defined in `process.env.CLIENT_URL` (e.g., `https://localhost:5173`).
+    -   Wildcard `*` origins are strictly forbidden in production.
+    -   `credentials: true` is enabled to allow secure cookie transmission.
+
+*   **Where it is applied:**
+    -   **Express:** [index.js](file:///e:/shahi/Documents/Developer/Cw2/WorkDay/WorkDay_Api/index.js).
+    -   **Socket.IO:** [server.js](file:///e:/shahi/Documents/Developer/Cw2/WorkDay/WorkDay_Api/server.js).
+
+*   **Why it is applied:**
+    -   Prevents malicious sites from accessing sensitive user data via API calls if a user visits them while logged in to WorkDay.
+    -   Complements CSRF protection by ensuring the browser blocks cross-origin reads.
+
+*   **Testing:**
+    -   **Manual:**
+        1.  Open the app from `https://localhost:5173` (Trusted). API calls should work.
+        2.  Try to fetch data using `curl` or Postman with a fake `Origin` header (e.g., `Origin: http://hacker-site.com`). The server should either reject it or not return the `Access-Control-Allow-Origin` header matching the fake origin.
+    -   **Burp Suite:**
+        1.  Capture an authenticated request.
+        2.  Send to Repeater.
+        3.  Change the `Origin` header to `https://malicious.com`.
+        4.  Send the request.
+        5.  **Result:** The response should **NOT** contain `Access-Control-Allow-Origin: https://malicious.com`. It should typically fail or return a CORS error.
+
+---
+
+## 15. URL Path Masking (Directory Structure Hiding)
+
+Prevents users and attackers from knowing the physical directory structure of the server (e.g., `/uploads/`) when viewing media files.
+
+*   **How it is applied:**
+    -   **Direct Static Access Disabled:** The default `express.static` middleware for the `/uploads` directory has been disabled.
+    -   **Masked Route:** A custom endpoint `/api/media/:filename` serves the files. This endpoint internally resolves the path to the physical directory but exposes only a generic API URL to the user.
+    -   **Frontend Integration:** The frontend utility `getBackendImageUrl` transforms any stored file path (e.g., `uploads/avatar.png`) into the masked URL (e.g., `/api/media/avatar.png`).
+*   **Where it is applied:**
+    -   **Backend:** [index.js](file:///e:/shahi/Documents/Developer/Cw2/WorkDay/WorkDay_Api/index.js) (Route definition).
+    -   **Frontend:** [backend_image.js](file:///e:/shahi/Documents/Developer/Cw2/WorkDay/WorkDay_Web/WorkDay/src/utils/backend_image.js).
+*   **Why it is applied:**
+    -   **Information Hiding:** Prevents "Information Disclosure" regarding the server's file system layout.
+    -   **Controlled Access:** Allows adding authentication or logging logic to file access in the future if needed, which is harder with static middleware.
+*   **Testing:**
+    -   **Manual:**
+        1.  Right-click an image on the site and select "Open Image in New Tab".
+        2.  **Verify:** The URL should look like `https://localhost:5050/api/media/filename.png`.
+        3.  **Verify:** It should **NOT** containing `/uploads/`.
+        4.  **Negative Request:** Try to access `https://localhost:5050/uploads/filename.png`. It should return `404 Not Found` (Cannot GET).
+
+---
+
+## 16. Advanced XSS Protection & Sanitization
+
+To mitigate Cross-Site Scripting (XSS) risks, the application implements a multi-layered defense strategy ensuring that no malicious scripts can be injected or executed.
+
+*   **How it is applied:**
+    -   **Backend (Input Sanitization):** 
+        -   Uses the `xss` library and `express-validator` to sanitize *all* incoming request data (`req.body`, `req.query`, `req.params`) before it reaches any controller.
+        -   Recursively cleans nested objects and arrays to neutralize script tags and malicious attributes.
+        -   Implemented as a global middleware `inputSanitizer.js`.
+    -   **Frontend (Output Encoding & Sanitization):** 
+        -   Uses `DOMPurify` to sanitize any HTML content before rendering (though the app primarily relies on React's default safe rendering).
+        -   Strictly avoids `dangerouslySetInnerHTML` for user-generated content.
+    -   **Content Security Policy (CSP):** 
+        -   Enforced via Helmet to restrict script sources to `'self'` and trusted domains (like Google/Facebook for auth), blocking inline scripts.
+
+*   **Where it is applied:**
+    -   **Backend Middleware:** [inputSanitizer.js](file:///e:/shahi/Documents/Developer/Cw2/WorkDay/WorkDay_Api/middlewares/inputSanitizer.js) (Global application).
+    -   **Frontend Utility:** [sanitizer.js](file:///e:/shahi/Documents/Developer/Cw2/WorkDay/WorkDay_Web/WorkDay/src/utils/sanitizer.js).
+
+*   **Why it is applied:**
+    -   **Session Protection:** Prevents attackers from injecting scripts to steal JWT tokens or session cookies.
+    -   **Data Integrity:** Ensures that user-submitted content (like chat messages, reviews, or job descriptions) cannot deface the site or redirect users to malicious pages.
+
+*   **Testing:**
+    -   **Backend Test:** 
+        1. Send a POST request to any endpoint (e.g., login or update profile).
+        2. Include a payload like: `{"name": "<script>alert('xss')</script>"}`.
+        3. **Verify:** The backend should process it as `&lt;script&gt;alert('xss')&lt;/script&gt;` or strip it entirely, rendering it harmless.
+    -   **Frontend Test:** 
+        1. Type `<img src=x onerror=alert(1)>` into a chat message or input field.
+        2. **Verify:** React should render the text literally, and no alert should pop up.

@@ -21,10 +21,12 @@ const server = https.createServer(options, app);
 // 2. Initialize Socket.IO instance
 const io = new Server(server, {
     cors: {
-        origin: "https://localhost:5173", // <--- Updated to https
-        methods: ["GET", "POST"],
-        credentials: true // <--- IMPORTANT: Add this to explicitly allow credentials
-    },
+        cors: {
+            origin: process.env.CLIENT_URL || "https://localhost:5173", // <--- Updated to use strict env var
+            methods: ["GET", "POST"],
+            credentials: true // <--- IMPORTANT: Add this to explicitly allow credentials
+        },
+    }
 });
 
 // 3. Attach `io` instance to Express app so it can be accessed globally (e.g., in controllers)

@@ -48,13 +48,28 @@ export default function NotFoundPage() {
 
             {/* Button */}
             <motion.button
-                onClick={() => navigate("/")}
+                onClick={() => {
+                    const userStr = localStorage.getItem("user");
+                    if (userStr) {
+                        try {
+                            const user = JSON.parse(userStr);
+                            if (user?.role === "admin") navigate("/admin/dashboard");
+                            else if (user?.role === "worker") navigate("/worker/dashboard");
+                            else if (user?.role === "customer") navigate("/"); // Customer dashboard is usually home or specific route
+                            else navigate("/");
+                        } catch (e) {
+                            navigate("/");
+                        }
+                    } else {
+                        navigate("/login");
+                    }
+                }}
                 className="mt-8 px-8 py-3 bg-white text-blue-600 font-bold rounded-full shadow-xl hover:bg-blue-100 transition-all z-10"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 transition={{ type: "spring", stiffness: 300 }}
             >
-                Beam Me Back Home
+                Go to Dashboard
             </motion.button>
 
             {/* Floating asteroids (humor effect) */}
