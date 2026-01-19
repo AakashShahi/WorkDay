@@ -26,3 +26,5 @@ export const getFailedJobApi = () => axios.get("/worker/jobs/failed")
 
 export const deleteFailedJobByWorkerApi = (jobId) => axios.delete(`/worker/jobs/${jobId}/soft-delete`)
 
+
+// Worker job related API endpoints
