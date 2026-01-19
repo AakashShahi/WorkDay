@@ -272,3 +272,5 @@ export default function WorkerReviews() {
         </div>
     );
 }
+
+// Worker reviews display component
