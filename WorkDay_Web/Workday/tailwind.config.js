@@ -20,3 +20,5 @@ export default {
 
 }
 
+
+// Tailwind CSS configuration
