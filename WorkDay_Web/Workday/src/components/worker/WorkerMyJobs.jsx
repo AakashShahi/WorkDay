@@ -94,3 +94,5 @@ export default function WorkerMyJobs() {
         </div>
     );
 }
+
+// Component for displaying worker's jobs
