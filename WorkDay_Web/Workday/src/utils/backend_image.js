@@ -7,3 +7,4 @@ export const getBackendImageUrl = (imagePath) => {
 
     return `${apiUrl}/api/media/${cleanFilename}`;
 }
+// Backend image handling utility
