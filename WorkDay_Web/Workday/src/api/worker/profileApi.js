@@ -17,3 +17,4 @@ export const updateWorkerPasswordApi = (payload) =>
 
 export const applyForVerified = () => axios.post("/worker/profile/apply-verification")
 export const cancelVerification = () => axios.post("/worker/profile/cancel-verification")
+// Worker profile API endpoints
