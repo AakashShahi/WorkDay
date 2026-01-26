@@ -1,4 +1,12 @@
-import { applyForVerified, cancelVerification, getWorkerProfileApi, updateWorkerPasswordApi, updateWorkerProfileApi } from "../../api/worker/profileApi";
+import {
+    applyForVerified,
+    cancelVerification,
+    getWorkerProfileApi,
+    updateWorkerPasswordApi,
+    updateWorkerProfileApi,
+    initializePaymentApi,
+    verifyPaymentApi
+} from "../../api/worker/profileApi";
 
 // Get worker profile
 export const getWorkerProfileService = async () => {
@@ -51,5 +59,26 @@ export const cancelVerificationService = async () => {
     } catch (err) {
         console.error("Error cancelling verification:", err);
         throw err.response?.data || { message: "Failed to cancel verification request" };
+    }
+};
+
+// Khalti Payment
+export const initializePaymentService = async (payload) => {
+    try {
+        const response = await initializePaymentApi(payload);
+        return response.data;
+    } catch (err) {
+        console.error("Error initializing payment:", err);
+        throw err.response?.data || { message: "Failed to initialize payment" };
+    }
+};
+
+export const verifyPaymentService = async (pidx) => {
+    try {
+        const response = await verifyPaymentApi(pidx);
+        return response.data;
+    } catch (err) {
+        console.error("Error verifying payment:", err);
+        throw err.response?.data || { message: "Failed to verify payment" };
     }
 };

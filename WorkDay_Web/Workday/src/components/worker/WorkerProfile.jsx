@@ -3,6 +3,7 @@ import {
     useGetWorkerProfile,
     useApplyForVerification,
     useCancelVerification,
+    useInitializePayment,
 } from "../../hooks/worker/useWorkerProfile";
 import { getBackendImageUrl } from "../../utils/backend_image";
 import {
@@ -35,6 +36,7 @@ export default function WorkerProfile() {
 
     const applyVerificationMutation = useApplyForVerification();
     const cancelVerificationMutation = useCancelVerification();
+    const initializePaymentMutation = useInitializePayment();
 
     const handleDownloadPDF = async () => {
         const element = profileRef.current;
@@ -93,13 +95,17 @@ export default function WorkerProfile() {
     };
 
     const confirmVerificationAction = () => {
-        const mutation =
-            verificationAction === "apply"
-                ? applyVerificationMutation
-                : cancelVerificationMutation;
-        mutation.mutate(null, {
-            onSuccess: () => setVerificationModalOpen(false),
-        });
+        if (verificationAction === "apply") {
+            initializePaymentMutation.mutate({
+                amount: 10000, // 100 NPR in paisa
+                purchase_order_id: `verify_${profile._id}_${Date.now()}`,
+                purchase_order_name: "Worker Verification Fee"
+            });
+        } else {
+            cancelVerificationMutation.mutate(null, {
+                onSuccess: () => setVerificationModalOpen(false),
+            });
+        }
     };
 
     const closeVerificationModal = () => setVerificationModalOpen(false);
@@ -310,21 +316,21 @@ export default function WorkerProfile() {
                         </h3>
                         <p className="text-gray-600 mb-6">
                             {verificationAction === "apply"
-                                ? "Do you want to apply for verification?"
+                                ? "Verification requires a one-time fee of Rs. 100. You will be redirected to Khalti to complete the payment."
                                 : "Do you want to cancel your verification request?"}
                         </p>
                         <div className="flex justify-center gap-4">
                             <button
                                 onClick={confirmVerificationAction}
                                 className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-                                disabled={applyVerificationMutation.isLoading || cancelVerificationMutation.isLoading}
+                                disabled={initializePaymentMutation.isLoading || cancelVerificationMutation.isLoading}
                             >
-                                Yes
+                                {verificationAction === "apply" ? "Pay with Khalti" : "Yes"}
                             </button>
                             <button
                                 onClick={closeVerificationModal}
                                 className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400"
-                                disabled={applyVerificationMutation.isLoading || cancelVerificationMutation.isLoading}
+                                disabled={initializePaymentMutation.isLoading || cancelVerificationMutation.isLoading}
                             >
                                 Cancel
                             </button>

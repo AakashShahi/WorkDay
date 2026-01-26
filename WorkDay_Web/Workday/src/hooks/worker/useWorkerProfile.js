@@ -6,10 +6,48 @@ import {
     updateWorkerPasswordService,
     applyForVerificationService,
     cancelVerificationService,
+    initializePaymentService,
+    verifyPaymentService
 } from "../../services/worker/profileService";
 import { WORKER_PROFILE, WORKER_CHANGE_PASSWORD, WORKER_UPDATE_PROFILE } from "../../constants/queryKeys"
 
 //  Get Worker Profile
+// ... existing hooks ...
+
+// Initialize Payment hook
+export const useInitializePayment = () => {
+    return useMutation({
+        mutationFn: (payload) => initializePaymentService(payload),
+        onSuccess: (data) => {
+            if (data.success && data.data.payment_url) {
+                window.location.href = data.data.payment_url;
+            }
+        },
+        onError: (error) => {
+            toast.error(error.message || "Failed to initialize payment");
+        },
+    });
+};
+
+// Verify Payment hook
+export const useVerifyPayment = () => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: (pidx) => verifyPaymentService(pidx),
+        onSuccess: (data) => {
+            if (data.data.status === "Completed") {
+                toast.success("Payment successful! Verification request submitted.");
+                queryClient.invalidateQueries([WORKER_PROFILE]);
+            } else {
+                toast.warning(`Payment status: ${data.data.status}`);
+            }
+        },
+        onError: (error) => {
+            toast.error(error.message || "Failed to verify payment");
+        },
+    });
+};
 export const useGetWorkerProfile = () => {
     return useQuery({
         queryKey: [WORKER_PROFILE],

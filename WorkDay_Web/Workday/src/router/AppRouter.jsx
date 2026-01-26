@@ -5,6 +5,7 @@ import RegisterPage from '../pages/RegisterPage';
 import MainLayout from '../layouts/worker/MainLayout';
 import AdminUserRoute from './admin/AdminUserRoute';
 import WorkerUserRoute from './worker/WorkerUserRoute';
+import PaymentStatus from '../components/worker/PaymentStatus';
 import WorkerDashboardPage from '../pages/workers_page/WorkerDashBoardPage';
 import AdminMainLayout from '../layouts/admin/AdminMainLayout';
 import AdminDashboard from '../components/admin/AdminDashboard';
@@ -38,6 +39,7 @@ export default function AppRouter() {
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/request-reset-password" element={<RequestResetPasswordPage />}></Route>
           <Route path="/reset/password/:token" element={<ResetPasswordPage />}></Route>
+          <Route path="/payment-status" element={<PaymentStatus />} />
 
           {/* Worker Protected Routes */}
           {/* Worker Dashboard and Job Management */}
