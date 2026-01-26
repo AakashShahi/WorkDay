@@ -20,6 +20,7 @@ const customerRoute = require("./routes/customer/customerRoute")
 const customerReviewRoute = require("./routes/customer/customerReviewRoute")
 const adminJobRoutes = require("./routes/admin/adminJobRoute")
 const customerNotificationRoute = require("./routes/customer/customerNotificationRoute")
+const paymentRoutes = require("./routes/paymentRoutes")
 
 
 const path = require("path")
@@ -44,12 +45,12 @@ app.use(
         useDefaults: true,
         directives: {
             defaultSrc: ["'self'"],
-            scriptSrc: ["'self'", process.env.CLIENT_URL],
+            scriptSrc: ["'self'", process.env.CLIENT_URL, "https://khalti.com", "https://*.khalti.com"],
             styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-            imgSrc: ["'self'", "data:", "blob:", "https://*.googleusercontent.com", "https://*.facebook.com", "https://platform-lookaside.fbsbx.com"], // Allow social login profile pics
+            imgSrc: ["'self'", "data:", "blob:", "https://*.googleusercontent.com", "https://*.facebook.com", "https://platform-lookaside.fbsbx.com", "https://khalti.com", "https://*.khalti.com"], // Allow social login profile pics
             fontSrc: ["'self'", "https://fonts.gstatic.com"],
-            connectSrc: ["'self'", process.env.CLIENT_URL, "https://www.googleapis.com", "https://graph.facebook.com"], // Allow OAuth calls
-            frameSrc: ["'self'", "https://www.google.com"], // Allow reCAPTCHA
+            connectSrc: ["'self'", process.env.CLIENT_URL, "https://www.googleapis.com", "https://graph.facebook.com", "https://khalti.com", "https://*.khalti.com"], // Allow OAuth and Khalti calls
+            frameSrc: ["'self'", "https://www.google.com", "https://khalti.com", "https://*.khalti.com"], // Allow reCAPTCHA and Khalti
             objectSrc: ["'none'"],
             upgradeInsecureRequests: [],
         },
@@ -145,6 +146,9 @@ app.use("/api/customer/notifications", customerNotificationRoute)
 
 //chat
 app.use("/api/chat", chatRoutes);
+
+// payment
+app.use("/api/payment", paymentRoutes);
 
 
 module.exports = app
