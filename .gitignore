@@ -29,3 +29,5 @@ WorkDay_Api/suspect_files.txt
 # IDE
 .vscode/
 .idea/
+.report.md
+.SECURITY_AUDIT.md
