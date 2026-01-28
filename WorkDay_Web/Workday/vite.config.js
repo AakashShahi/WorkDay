@@ -10,6 +10,7 @@ export default defineConfig({
     react(),
   ],
   server: {
+    host: '127.0.0.1',
     https: {
       key: fs.readFileSync(path.resolve(__dirname, '../../certs/server.key')),
       cert: fs.readFileSync(path.resolve(__dirname, '../../certs/server.crt')),

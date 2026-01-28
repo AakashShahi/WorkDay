@@ -37,4 +37,7 @@ router.post("/secure-update-password", authenticateUser, userController.secureUp
 router.post("/google", userController.googleLogin)
 router.post("/facebook", userController.facebookLogin)
 
+// Email Verification
+router.get("/verify-email", userController.verifyEmail)
+
 module.exports = router

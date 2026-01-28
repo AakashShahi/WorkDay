@@ -21,6 +21,34 @@ To protect against automated attacks, bots, and brute-force attempts.
 
 ---
 
+## 1.1 Email Verification
+
+Ensures only users with access to a valid email address can create and use accounts.
+
+- **How it is applied:**
+  - Upon registration, the backend generates a secure, random token (using `crypto.randomBytes`) and stores it with a 24-hour expiration.
+  - A verification email is sent to the user containing a link like: `https://domain.com/verify-email?token=<TOKEN>`.
+  - When the user clicks the link, the frontend calls the backend `/api/auth/verify-email` endpoint to validate the token and mark the account as verified.
+  - **Login is blocked** for users whose email is not yet verified, returning a `403` status with the message "Email not verified. Please check your inbox."
+- **Where it is applied:**
+  - **Backend Model:** [User.js](file:///e:/shahi/Documents/Developer/Cw2/WorkDay/WorkDay_Api/models/User.js) (`isEmailVerified`, `emailVerificationToken`, `emailVerificationExpires` fields).
+  - **Backend Controller:** [userController.js](file:///e:/shahi/Documents/Developer/Cw2/WorkDay/WorkDay_Api/controllers/userController.js) (`regiterUser` sends email, `loginUser` checks verification, `verifyEmail` validates token).
+  - **Backend Routes:** [userRoutes.js](file:///e:/shahi/Documents/Developer/Cw2/WorkDay/WorkDay_Api/routes/userRoutes.js) (`GET /api/auth/verify-email`).
+  - **Frontend:** [EmailVerificationPage.jsx](file:///e:/shahi/Documents/Developer/Cw2/WorkDay/WorkDay_Web/Workday/src/pages/EmailVerificationPage.jsx), [LoginForm.jsx](file:///e:/shahi/Documents/Developer/Cw2/WorkDay/WorkDay_Web/Workday/src/components/auth/LoginForm.jsx).
+- **Why it is applied:**
+  - **Account Authenticity:** Prevents creation of accounts with fake or mistyped emails.
+  - **Spam Prevention:** Reduces bot registrations and abuse.
+  - **Secure Recovery:** Ensures password reset and OTP emails reach the legitimate owner.
+- **Testing:**
+  1.  **Registration:** Register a new user. Confirm that the success message says "Please check your email to verify your account."
+  2.  **Email Check:** Verify that a verification email is received with a clickable link.
+  3.  **Login Before Verification:** Attempt to log in before clicking the link. The system must return a `403` error with "Email not verified."
+  4.  **Verification:** Click the link. The page should display "Email Verified Successfully."
+  5.  **Login After Verification:** Log in again. The login should succeed and redirect to the dashboard.
+  6.  **Burp Suite:** Capture the verification request. Change the token to an invalid value. Ensure the server returns `400` with "Invalid or expired verification link."
+
+---
+
 ## 2. Two-Factor Authentication (2FA)
 
 Provides an extra layer of security beyond just a password.
@@ -121,17 +149,20 @@ Protects the server from malicious file uploads and directory traversal attacks.
   - **Frontend Validation:** All upload fields display the allowed maximum size (5MB) and the actual size of the selected file, providing immediate feedback before submission.
   - **Filename Sanitization:** Files are renamed using `uuidv4` to prevent attackers from controlling the filename and conducting path traversal or overwriting critical files.
   - **Path Canonicalization:** A custom utility [pathValidator.js](file:///e:/shahi/Documents/Developer/Cw2/WorkDay/WorkDay_Api/utils/pathValidator.js) is used to ensure resolved paths stay within the `uploads/` directory.
+  - **Generic Error Responses (Information Disclosure Prevention):** A global error handler catches all file upload errors (e.g., invalid extension, file too large) and returns a generic JSON response. This prevents leaking internal directory paths, stack traces, or server configuration details to attackers.
 - **Where it is applied:**
   - **Frontend:** [WorkerProfileModals.jsx](file:///e:/shahi/Documents/Developer/Cw2/WorkDay/WorkDay_Web/Workday/src/components/worker/modals/WorkerProfileModals.jsx), [AdminSetting.jsx](file:///e:/shahi/Documents/Developer/Cw2/WorkDay/WorkDay_Web/Workday/src/components/admin/AdminSetting.jsx), and Profession modals.
   - **Backend Middleware:** [fileUpload.js](file:///e:/shahi/Documents/Developer/Cw2/WorkDay/WorkDay_Api/middlewares/fileUpload.js).
   - **Backend Utility:** [pathValidator.js](file:///e:/shahi/Documents/Developer/Cw2/WorkDay/WorkDay_Api/utils/pathValidator.js).
+  - **Global Error Handler:** [index.js](file:///e:/shahi/Documents/Developer/Cw2/WorkDay/WorkDay_Api/index.js) (bottom of file).
 - **Why it is applied:**
   - Prevents Remote Code Execution (RCE) by blocking executable scripts (like `.php`, `.js`).
   - Mitigates Path Traversal attacks where an attacker tries to write or read files outside the intended directory using `../` sequences.
+  - Prevents Information Disclosure by masking internal paths and error details in API responses.
 - **Testing:**
-  - **General:** Attempt to upload a `.pdf` or `.txt` file via the profile settings. The browser should either filter these out or the server should return an error.
+  - **General:** Attempt to upload a `.pdf` or `.txt` file via the profile settings. The browser should either filter these out or the server should return a generic error.
   - **Burp Suite (Bypassing UI):** Intercept an upload request. Change the filename in the multipart body to `../../etc/passwd` or `shell.php`.
-  - **Verification:** Ensure the server returns a `500` or `400` error (e.g., `"Invalid file extension"` or `"Only .png, .jpg and .jpeg format allowed!"`) and no file is created outside the `uploads/` directory.
+  - **Verification:** Ensure the server returns a `400` error with a generic JSON message (e.g., `{"success": false, "message": "Only .png, .jpg and .jpeg format allowed!"}`). **Crucially, no internal paths (like `E:\...`) or stack traces should be visible.**
 
 ---
 

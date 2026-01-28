@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import LoginPage from '../pages/LoginPage';
 import RegisterPage from '../pages/RegisterPage';
+import EmailVerificationPage from '../pages/EmailVerificationPage';
 import MainLayout from '../layouts/worker/MainLayout';
 import AdminUserRoute from './admin/AdminUserRoute';
 import WorkerUserRoute from './worker/WorkerUserRoute';
@@ -37,6 +38,7 @@ export default function AppRouter() {
           <Route path="/" element={<LoginPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/verify-email" element={<EmailVerificationPage />} />
           <Route path="/request-reset-password" element={<RequestResetPasswordPage />}></Route>
           <Route path="/reset/password/:token" element={<ResetPasswordPage />}></Route>
           <Route path="/payment-status" element={<PaymentStatus />} />

@@ -135,7 +135,12 @@ export default function LoginForm() {
                 setIsPending(false);
                 const data = error.response?.data;
 
-                if (error.response?.status === 403 && data?.isLocked) {
+                if (error.response?.status === 403 && data?.isEmailNotVerified) {
+                    // Email not verified
+                    toast.error(data.message || "Email not verified. Please check your inbox.", {
+                        autoClose: 8000
+                    });
+                } else if (error.response?.status === 403 && data?.isLocked) {
                     const lockUntil = new Date(data.lockUntil);
                     setLockoutTimer(lockUntil);
                     toast.error(data.message || "Account is locked.");

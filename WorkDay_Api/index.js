@@ -115,6 +115,11 @@ const authLimiter = rateLimit({
     message: { success: false, message: "Too many login/registration attempts, please try again after 15 minutes" },
     standardHeaders: true,
     legacyHeaders: false,
+    skip: (req) => {
+        // Skip rate limiting for email verification (one-time click from email)
+        // Check both path and originalUrl to be robust against different mount points
+        return req.path.includes('/verify-email') || req.originalUrl.includes('/verify-email');
+    }
 });
 
 //User rgistration/login Route
@@ -150,5 +155,40 @@ app.use("/api/chat", chatRoutes);
 // payment
 app.use("/api/payment", paymentRoutes);
 
+
+// ============================================
+// Global Error Handling Middleware
+// ============================================
+// Catches all errors (including Multer file upload errors) and returns
+// a generic JSON response to prevent information disclosure.
+// IMPORTANT: This must be the LAST middleware before module.exports.
+app.use((err, req, res, next) => {
+    // Log the error internally for debugging (secure, server-side only)
+    console.error("[Global Error Handler]:", err.message);
+
+    // Determine the status code
+    let statusCode = err.statusCode || err.status || 500;
+
+    // Handle Multer-specific errors
+    if (err.name === "MulterError") {
+        statusCode = 400;
+    }
+
+    // Define generic messages for common file upload errors
+    const genericMessages = {
+        "Invalid file extension": "Only .png, .jpg and .jpeg format allowed!",
+        "Only .png, .jpg and .jpeg format allowed!": "Only .png, .jpg and .jpeg format allowed!",
+        "File too large": "File size exceeds the 5MB limit.",
+    };
+
+    // Get a safe, generic message
+    const safeMessage = genericMessages[err.message] || "An error occurred. Please try again.";
+
+    // Return a generic JSON error response
+    return res.status(statusCode).json({
+        success: false,
+        message: safeMessage,
+    });
+});
 
 module.exports = app

@@ -87,6 +87,17 @@ const UserSchema = new mongoose.Schema(
         },
         updateOTPExpires: {
             type: Date,
+        },
+        // Email Verification Fields
+        isEmailVerified: {
+            type: Boolean,
+            default: false,
+        },
+        emailVerificationToken: {
+            type: String,
+        },
+        emailVerificationExpires: {
+            type: Date,
         }
     },
     {

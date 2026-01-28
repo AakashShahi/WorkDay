@@ -10,6 +10,7 @@ const speakeasy = require("speakeasy")
 const qrcode = require("qrcode")
 const axios = require("axios")
 const { logActivity } = require("../utils/auditLogger");
+const { verifyCaptcha } = require("../utils/captcha");
 
 //Registration COntroller
 exports.regiterUser = async (req, res) => {
@@ -17,27 +18,15 @@ exports.regiterUser = async (req, res) => {
     const { username, email, name, password, role, profession, skills, location, availability, certificateUrl, isVerified, phone, captchaToken } = req.body
 
     // 1. Verify Captcha
-    if (!captchaToken) {
-        console.log("Captcha token missing in registration");
-        return res.status(400).json({ success: false, message: "Captcha token is missing" });
-    }
-
-    try {
-        const googleVerifyUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${process.env.RECAPTCHA_SECRET_KEY}&response=${captchaToken}`;
-        const response = await axios.post(googleVerifyUrl);
-        if (!response.data.success) {
-            console.log("Captcha verification failed in registration:", response.data);
-            await logActivity({
-                action: "REGISTRATION",
-                status: "FAILURE",
-                details: `Captcha verification failed for ${username}`,
-                req: req
-            });
-            return res.status(400).json({ success: false, message: "Captcha verification failed" });
-        }
-    } catch (error) {
-        console.error("Captcha Error in registration:", error);
-        return res.status(500).json({ success: false, message: "Captcha verification server error" });
+    const isCaptchaValid = await verifyCaptcha(captchaToken);
+    if (!isCaptchaValid) {
+        await logActivity({
+            action: "REGISTRATION",
+            status: "FAILURE",
+            details: `Captcha verification failed for ${username}`,
+            req: req
+        });
+        return res.status(400).json({ success: false, message: "Captcha verification failed or token reused" });
     }
 
     // 2. Validate Password Complexity (Min 8 chars, 1 Upper, 1 Lower, 1 Number, 1 Special)
@@ -81,6 +70,10 @@ exports.regiterUser = async (req, res) => {
         const hashedPass = await bcrypt.hash(password, 10)
         const profilePic = req.file?.path
 
+        // Generate email verification token
+        const crypto = require("crypto");
+        const emailVerificationToken = crypto.randomBytes(32).toString("hex");
+        const emailVerificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
         const newUser = new User(
             {
@@ -96,24 +89,49 @@ exports.regiterUser = async (req, res) => {
                 certificateUrl,
                 isVerified,
                 profilePic: profilePic,
-                phone: phone
+                phone: phone,
+                isEmailVerified: false,
+                emailVerificationToken: emailVerificationToken,
+                emailVerificationExpires: emailVerificationExpires
             }
         )
 
         await newUser.save()
         console.log("User registered successfully:", username);
 
+        // Send verification email
+        const verificationUrl = `${process.env.CLIENT_URL}/verify-email?token=${emailVerificationToken}`;
+        const mailOptions = {
+            from: `"WorkDay" <${process.env.EMAIL_USER}>`,
+            to: email,
+            subject: "Verify Your Email - WorkDay",
+            html: `
+                <h2>Welcome to WorkDay!</h2>
+                <p>Please click the link below to verify your email address:</p>
+                <a href="${verificationUrl}" style="display: inline-block; padding: 10px 20px; background-color: #2563eb; color: white; text-decoration: none; border-radius: 5px;">Verify Email</a>
+                <p>This link will expire in 24 hours.</p>
+                <p>If you did not create an account, please ignore this email.</p>
+            `
+        };
+
+        transporter.sendMail(mailOptions, async (err, info) => {
+            if (err) {
+                console.error("Verification email error:", err);
+                // Still return success - user can request resend later
+            }
+        });
+
         await logActivity({
             userId: newUser._id,
             username: newUser.username,
             action: "REGISTRATION",
             status: "SUCCESS",
-            details: `New user registered as ${role}: ${username}`,
+            details: `New user registered as ${role}: ${username}. Verification email sent.`,
             req: req
         });
 
         return res.status(200).json(
-            { "success": true, "message": `${role} registered` }
+            { "success": true, "message": "Registration successful! Please check your email to verify your account." }
         )
 
     } catch (error) {
@@ -131,21 +149,10 @@ exports.loginUser = async (req, res) => {
     const { email, password, username, captchaToken } = req.body
 
     // 1. Verify Captcha
-    if (!captchaToken) {
-        console.log("Captcha token missing in login");
-        return res.status(400).json({ success: false, message: "Captcha token is missing" });
-    }
-
-    try {
-        const googleVerifyUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${process.env.RECAPTCHA_SECRET_KEY}&response=${captchaToken}`;
-        const response = await axios.post(googleVerifyUrl);
-        if (!response.data.success) {
-            console.log("Captcha verification failed in login:", response.data);
-            return res.status(400).json({ success: false, message: "Captcha verification failed" });
-        }
-    } catch (error) {
-        console.error("Captcha Error in login:", error);
-        return res.status(500).json({ success: false, message: "Captcha verification server error" });
+    const isCaptchaValid = await verifyCaptcha(captchaToken);
+    if (!isCaptchaValid) {
+        console.log("Captcha verification failed or reused in login");
+        return res.status(400).json({ success: false, message: "Captcha verification failed or token used" });
     }
 
     if (!password || (!email && !username)) {
@@ -175,6 +182,24 @@ exports.loginUser = async (req, res) => {
             return res.status(400).json(
                 { "success": false, "message": "Invalid email/username or password" }
             )
+        }
+
+        // Check if email is verified
+        if (!getUser.isEmailVerified) {
+            console.log("Email not verified for user:", getUser.username);
+            await logActivity({
+                userId: getUser._id,
+                username: getUser.username,
+                action: "LOGIN_FAILURE",
+                status: "FAILURE",
+                details: "Login attempt with unverified email.",
+                req: req
+            });
+            return res.status(403).json({
+                success: false,
+                message: "Email not verified. Please check your inbox and verify your email before logging in.",
+                isEmailNotVerified: true
+            });
         }
 
         // Check if account is locked
@@ -739,5 +764,58 @@ exports.secureUpdatePassword = async (req, res) => {
     } catch (error) {
         console.error("Secure Password Update Error:", error);
         res.status(500).json({ success: false, message: "Server Error" });
+    }
+}
+
+// Email Verification
+exports.verifyEmail = async (req, res) => {
+    const { token } = req.query;
+
+    // Clean the token: remove whitespace and any potential mangling characters like slashes (seen in some environments)
+    const cleanedToken = token.trim().replace(/[^a-f0-9]/gi, '');
+
+    try {
+        console.log("Attempting email verification with token:", cleanedToken);
+        
+        // 1. Find user by token
+        let user = await User.findOne({
+            emailVerificationToken: cleanedToken,
+            emailVerificationExpires: { $gt: Date.now() }
+        });
+
+        if (!user) {
+            console.log("No unverified user found with this token. Checking if already verified...");
+            // Optionally: You could have a 'recentlyVerifiedToken' field to handle this, 
+            // but for now let's just log and return the standard error.
+            return res.status(400).json({
+                success: false,
+                message: "Verification link invalid or already used. If you just clicked this, you might already be verified."
+            });
+        }
+
+        // Mark email as verified
+        user.isEmailVerified = true;
+        user.emailVerificationToken = undefined;
+        user.emailVerificationExpires = undefined;
+        await user.save();
+        console.log("User email verified successfully:", user.username);
+
+        await logActivity({
+            userId: user._id,
+            username: user.username,
+            action: "EMAIL_VERIFICATION",
+            status: "SUCCESS",
+            details: "Email verified successfully.",
+            req: req
+        });
+
+        return res.status(200).json({
+            success: true,
+            message: "Email verified successfully! You can now log in."
+        });
+
+    } catch (error) {
+        console.error("Email verification error:", error);
+        return res.status(500).json({ success: false, message: "Server Error" });
     }
 }

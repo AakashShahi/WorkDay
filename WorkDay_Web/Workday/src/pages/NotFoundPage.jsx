@@ -9,7 +9,7 @@ export default function NotFoundPage() {
         <div
             className="relative h-screen w-full flex flex-col items-center justify-center text-white px-4"
             style={{
-                backgroundImage: "linear-gradient(to bottom right, #FB923C, #EA580C, #1F2937)",
+                backgroundImage: "linear-gradient(to bottom right, #2563EB, #1E40AF, #1e293b)",
                 overflow: "hidden",
             }}
         >
